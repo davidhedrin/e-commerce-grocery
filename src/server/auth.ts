@@ -3,6 +3,7 @@
 import { db } from "../../prisma/db";
 import { hashPassword } from "@/lib/utils";
 import { signIn, signOut } from "@/lib/auth-setup"
+import { AuthProviderEnum, RolesEnum } from "@prisma/client";
 
 export async function signInGoogle() {
   await signIn("google");
@@ -37,12 +38,13 @@ export async function signUpAction(formData: FormData) {
   
     await db.user.create({
       data: {
+        fullname,
         email,
         password: hashPass,
         is_active: true,
-        fullname,
         createdBy: email,
-        role: "user"
+        provider: AuthProviderEnum.CREDENTIAL,
+        role: RolesEnum.USER
       }
     });
 

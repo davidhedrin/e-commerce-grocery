@@ -1,6 +1,32 @@
+"use client"
+
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { UseAlertDialog } from "@/components/alert-confirm";
+import { toast } from "sonner";
+import { signOutAuth } from "@/server/auth";
 
 export default function Home() {
+  const session = useSession();
+  const { openAlert } = UseAlertDialog();
+  
+  const signOutAction = async () => {
+    const confirmed = await openAlert({
+      title: 'Want to Logout?',
+      description: 'Are you sure you want to log out of your account?',
+      textConfirm: 'Log Me Out',
+      textClose: 'Not Now',
+      icon: 'bx bx-log-out bx-tada text-red-500'
+    });
+    if (!confirmed) return;
+
+    toast.success("Logged Out!", {
+      description: "We'll be here when you're ready to log back in.",
+    });
+    localStorage.clear();
+    await signOutAuth();
+  }
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -47,6 +73,13 @@ export default function Home() {
           >
             Login Here
           </a>
+          {
+            (session && session.status == "authenticated") && <div onClick={() => signOutAction()}
+              className="cursor-pointer rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
+            >
+              Logout
+            </div>
+          }
         </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">

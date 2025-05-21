@@ -14,12 +14,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum RolesEnum {
+  ADMIN
+  USER
+}
+enum AuthProviderEnum {
+  CREDENTIAL
+  GOOGLE
+  FACEBOOK
+	@@map("AuthProviderEnum")
+}
+
 model User {
   id             Int                 @id @default(autoincrement())
   email          String              @unique
   password       String
   email_verified DateTime?
-  role           String?
+  role           RolesEnum
   fullname       String?
   image          String?
   image_path     String?
@@ -28,6 +39,7 @@ model User {
   birth_date     DateTime?
   birth_place    String?
   is_active      Boolean?            @default(true)
+  provider       AuthProviderEnum
   ver_token      VerificationToken?
   reset_tokens   PasswordResetToken?
 
