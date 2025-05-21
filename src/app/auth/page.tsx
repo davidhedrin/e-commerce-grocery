@@ -12,11 +12,11 @@ export default function AuthPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-muted px-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-4">
-        <a href="#" className="flex items-center gap-2 self-center font-medium">
-          <div className="px-1 py-0.5 rounded-lg bg-orange-600 text-sidebar-primary-foreground">
+        <a href="/" className="flex items-center gap-2 self-center font-medium">
+          <div className="px-1 py-0.5 rounded-lg bg-blue-600 text-sidebar-primary-foreground">
             <i className='bx bx-shopping-bag text-3xl'></i>
           </div>
-          <div className="text-xl text-orange-600">
+          <div className="text-xl text-blue-600">
             {appName}
           </div>
         </a>

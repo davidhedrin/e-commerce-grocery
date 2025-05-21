@@ -128,7 +128,7 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
                 {toggle_pass ? <EyeOff size={18} /> : <Eye size={18} />}
               </a>
             </div>
-            <Button disabled={loadingSubmit} type="submit" className="w-full mt-2 cursor-pointer">
+            <Button disabled={loadingSubmit} type="submit" className="w-full mt-2 cursor-pointer primary">
               {loadingSubmit ? "Logging in..." : "Login"}
             </Button>
           </div>

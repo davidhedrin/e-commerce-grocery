@@ -78,7 +78,7 @@ export default function ForgtoPassword({ setSigninSignup }: { setSigninSignup: R
                 {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />}
               </div>
             </div>
-            <Button disabled={loadingSubmit} type="submit" className="w-full cursor-pointer">
+            <Button disabled={loadingSubmit} type="submit" className="w-full cursor-pointer primary">
               {loadingSubmit ? "Sending..." : "Send Email"}
             </Button>
           </div>

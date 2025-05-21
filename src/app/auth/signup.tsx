@@ -153,7 +153,7 @@ export default function AuthSignup({ setSigninSignup }: { setSigninSignup: React
                 {toggle_copass ? <EyeOff size={18} /> : <Eye size={18} />}
               </a>
             </div>
-            <Button disabled={loadingSubmit} type="submit" className="w-full mt-2 cursor-pointer">
+            <Button disabled={loadingSubmit} type="submit" className="w-full mt-2 cursor-pointer primary">
               {loadingSubmit ? "Submitting..." : "Register"}
             </Button>
           </div>
