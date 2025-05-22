@@ -7,6 +7,11 @@ import { AuthProviderEnum, RolesEnum } from "@prisma/client";
 import { EmailVerification } from "./email";
 import { randomUUID } from "crypto";
 
+export async function getUserById(id:number) {
+  const findData = await db.user.findUnique({ where: { id } });
+  return findData;
+}
+
 export async function signInGoogle() {
   await signIn("google");
 };
