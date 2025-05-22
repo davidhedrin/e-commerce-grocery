@@ -18,16 +18,18 @@ enum RolesEnum {
   ADMIN
   USER
 }
+
 enum AuthProviderEnum {
   CREDENTIAL
   GOOGLE
   FACEBOOK
-	@@map("AuthProviderEnum")
+
+  @@map("AuthProviderEnum")
 }
 
 model User {
-  id             Int                 @id @default(autoincrement())
-  email          String              @unique
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
   password       String
   email_verified DateTime?
   role           RolesEnum
@@ -38,10 +40,8 @@ model User {
   gender         String?
   birth_date     DateTime?
   birth_place    String?
-  is_active      Boolean?            @default(true)
+  is_active      Boolean?         @default(true)
   provider       AuthProviderEnum
-  ver_token      VerificationToken?
-  reset_tokens   PasswordResetToken?
 
   createdBy String?
   updatedBy String?
@@ -52,18 +52,15 @@ model User {
 }
 
 model VerificationToken {
-  userId  Int      @unique
-  token   String
-  expires DateTime
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int       @unique
+  token    String    @unique
+  createAt DateTime? @default(now())
 }
 
 model PasswordResetToken {
   id       Int       @id @default(autoincrement())
-  userId   Int       @unique
+  userId   Int       
   token    String    @unique
   createAt DateTime? @default(now())
-  reestAt  DateTime?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usingAt  DateTime?
 }

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card"
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ForgotPassword } from '@/server/email';
+import { EmailVerification, ForgotPassword } from '@/server/email';
 import { ZodErrors } from '@/components/zod-errors';
 import { toast } from 'sonner';
 import { SonnerPromise } from '@/lib/utils';
@@ -29,35 +29,47 @@ export default function ForgtoPassword({ setSigninSignup }: { setSigninSignup: R
     email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
   });
   const handleSubmit = async (formData: FormData) => {
-    const data = Object.fromEntries(formData);
-    const valResult = FormSchemaSignIn.safeParse(data);
-    if (!valResult.success) {
-      setStateForm({
-        success: false,
-        errors: valResult.error.flatten().fieldErrors,
+    try {
+      await EmailVerification(formData);
+
+      toast.success("Check your Email!", {
+        description: "We've send link reset password to your email.",
       });
-      return;
-    };
-    setStateForm({ success: true, errors: {} });
-    
-    setLoadingSubmit(true);
-    setTimeout(async () => {
-      const sonnerSignIn = SonnerPromise("Sending email...", "Hang tight, we're sending the reset link to your email");
-      try {
-        await ForgotPassword(formData);
-  
-        toast.success("Check your Email!", {
-          description: "We've send link reset password to your email.",
-        });
-        push("/");
-      } catch (error: any) {
-        toast.warning("Failed send Email!", {
-          description: error.message,
-        });
-      }
-      toast.dismiss(sonnerSignIn);
-      setLoadingSubmit(false);
-    }, 100)
+      push("/");
+    } catch (error: any) {
+      toast.warning("Failed send Email!", {
+        description: error.message,
+      });
+    }
+    // const data = Object.fromEntries(formData);
+    // const valResult = FormSchemaSignIn.safeParse(data);
+    // if (!valResult.success) {
+    //   setStateForm({
+    //     success: false,
+    //     errors: valResult.error.flatten().fieldErrors,
+    //   });
+    //   return;
+    // };
+    // setStateForm({ success: true, errors: {} });
+
+    // setLoadingSubmit(true);
+    // setTimeout(async () => {
+    //   const sonnerSignIn = SonnerPromise("Sending email...", "Hang tight, we're sending the reset link to your email");
+    //   try {
+    //     await ForgotPassword(formData);
+
+    //     toast.success("Check your Email!", {
+    //       description: "We've send link reset password to your email.",
+    //     });
+    //     push("/");
+    //   } catch (error: any) {
+    //     toast.warning("Failed send Email!", {
+    //       description: error.message,
+    //     });
+    //   }
+    //   toast.dismiss(sonnerSignIn);
+    //   setLoadingSubmit(false);
+    // }, 100);
   };
 
   return (

@@ -3,7 +3,7 @@ import { Html, Head, Body, Container, Section, Text, Link, Button, Hr, Img } fro
 type ResetPasswordProps = {
   url: string
 }
-export default function ResetPassword({url}: ResetPasswordProps) {
+export default function EmailVerifyTemplate({ url }: ResetPasswordProps) {
   const appName = process.env.NEXT_PUBLIC_APPS_NAME || "Jakarta Trading";
 
   return (
@@ -18,10 +18,10 @@ export default function ResetPassword({url}: ResetPasswordProps) {
           </Section>
 
           <Section style={{ backgroundColor: '#ffffff', padding: '20px', marginBottom: '25px', borderRadius: '8px', textAlign: 'center' }}>
-            <img src='https://cdn-icons-png.freepik.com/512/6357/6357048.png' width={90} style={{mixBlendMode: 'multiply', marginBottom: '15px', marginTop: '10px'}} />
-            <Text style={{ fontSize: '17px', fontWeight: 'bold', margin: '0px' }}>Password Reset Request!</Text>
+            <img src='https://img.freepik.com/premium-vector/envelope-with-approved-document-email-confirmation_349999-401.jpg' width={150} style={{mixBlendMode: 'multiply'}} />
+            <Text style={{ fontSize: '17px', fontWeight: 'bold', margin: '0px' }}>Verify Your Email Address!</Text>
             <Text style={{ fontSize: '14px', marginTop: '0px' }}>
-              Seems like you forgot your password for your Cazh-POS account. Click the button below to start resetting your password.
+              Thanks for signing up! To complete your registration, please verify your email address by clicking the button below.
             </Text>
 
             <Button
@@ -39,7 +39,7 @@ export default function ResetPassword({url}: ResetPasswordProps) {
                 marginTop: '10px',
                 marginBottom: '10px'
               }}>
-              Reset Password
+              Verify Email Address
             </Button>
 
             <Text style={{ fontSize: '14px', marginTop: '20px' }}>
@@ -58,7 +58,7 @@ export default function ResetPassword({url}: ResetPasswordProps) {
                 </Link>
               </Text>
               <Text style={{ fontSize: '13px', color: '#888', lineHeight: '19px', marginBottom: '0px', fontStyle: 'italic' }}>
-                For security reasons, This password reset URL will expire in <b>5 minutes</b>.
+                For security reasons, This verify email URL will expire in <b>1 minutes</b>.
               </Text>
             </Section>
           </Section>

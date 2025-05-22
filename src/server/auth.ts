@@ -69,7 +69,7 @@ export async function resetPassword(formData: FormData) {
       where: {
         token: tokens,
         createAt: { gt: new Date(Date.now() - 1000 * 60 * 5)},
-        reestAt: null
+        usingAt: null
       }
     });
     if(!findToken) throw new Error("We couldn't verify. The token may be incorrect or no longer valid.");
@@ -90,7 +90,7 @@ export async function resetPassword(formData: FormData) {
           id: findToken.id
         },
         data: {
-          reestAt: new Date()
+          usingAt: new Date()
         }
       });
     });
@@ -98,3 +98,7 @@ export async function resetPassword(formData: FormData) {
     throw new Error(error.message);
   }
 };
+
+export async function EmailVerify() {
+  
+}
