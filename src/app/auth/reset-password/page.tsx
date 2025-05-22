@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useActionState, useEffect, useState } from "react";
+import { use, useState } from "react";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -20,10 +20,10 @@ import { z } from "zod";
 import { FormState } from "@/lib/models-type";
 import { resetPassword } from "@/server/auth";
 
-export default function ResetPassword({ searchParams }: { searchParams: Promise<{ [key: string]: string }> }) {
-  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "Cazh POS";
+export default function ResetPassword({ params }: { params: Promise<{ [key: string]: string }> }) {
+  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "";
   const { push } = useRouter();
-  const { token } = use(searchParams);
+  const { token } = use(params);
 
   const [password, setPassword] = useState('');
   const [coPassword, setCoPassword] = useState('');
@@ -70,7 +70,7 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
 
     if (token === undefined || token.toString().trim() === "") {
       toast.warning("Invalid Token!", {
-        description: "Looks like your token is missing. Click and try again!",
+        description: "Looks like your token is missing. Click the link and try again!",
       });
       return;
     }

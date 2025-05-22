@@ -4,6 +4,8 @@ import { db } from "../../prisma/db";
 import { hashPassword } from "@/lib/utils";
 import { signIn, signOut } from "@/lib/auth-setup"
 import { AuthProviderEnum, RolesEnum } from "@prisma/client";
+import { EmailVerification } from "./email";
+import { randomUUID } from "crypto";
 
 export async function signInGoogle() {
   await signIn("google");
@@ -36,23 +38,28 @@ export async function signUpAction(formData: FormData) {
     const password = formData.get("password") as string;
     const hashPass = await hashPassword(password, 15);
   
-    await db.user.create({
-      data: {
-        fullname,
-        email,
-        password: hashPass,
-        is_active: true,
-        createdBy: email,
-        provider: AuthProviderEnum.CREDENTIAL,
-        role: RolesEnum.USER
-      }
-    });
+    await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          fullname,
+          email,
+          password: hashPass,
+          is_active: true,
+          createdBy: email,
+          provider: AuthProviderEnum.CREDENTIAL,
+          role: RolesEnum.USER
+        }
+      });
+      
+      const token = user.id + `${randomUUID()}${randomUUID()}`.replace(/-/g, '');
+      await tx.verificationToken.create({
+        data: {
+          userId: user.id,
+          token,
+        }
+      });
 
-    await signIn("credentials", {
-      redirect: false,
-      callbackUrl: "/dashboard",
-      email,
-      password
+      await EmailVerification(user.email, token);
     });
   } catch (error: any) {
     throw new Error(error.message);

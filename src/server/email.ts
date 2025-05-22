@@ -55,49 +55,48 @@ export async function ForgotPassword(formData: FormData) {
   }
 }
 
-export async function EmailVerification(formData: FormData) {
-  // const email = formData.get("email") as string;
-  const email = "portpolio.david99@gmail.com";
+export async function EmailVerification(email: string, token?: string) {
   try{
     if(!resend) throw new Error("Resend api key not found!");
 
-    const findEmail = await db.user.findUnique({
-      where: {
-        email: email,
-        is_active: true
-      }
-    });
-    if(!findEmail) throw new Error(`Sorry, but the email is not registration on ${appName}`);
-
-    const findExistToken = await db.verificationToken.findUnique({
-      where: { userId: findEmail.id }
-    });
-    if(findExistToken && findExistToken.createAt != null && findExistToken.createAt >= new Date(Date.now() - 1000 * 60 * 1)) throw new Error("To many request, please wait a few menutes to request again!");
-    
-    const token = findEmail.id + `${randomUUID()}${randomUUID()}`.replace(/-/g, '');
-    if (findExistToken) {
-      await db.verificationToken.update({
+    if(token == undefined || token == null){
+      const findEmail = await db.user.findUnique({
+        where: {
+          email: email,
+          is_active: true
+        }
+      });
+      if(!findEmail) throw new Error(`Sorry, but the email is not registration on ${appName}`);
+  
+      const findExistToken = await db.verificationToken.findUnique({
+        where: { userId: findEmail.id }
+      });
+      if (findExistToken && findExistToken.createAt) {
+        const timeDifference = new Date().getTime() - new Date(findExistToken.createAt).getTime();
+        if (timeDifference < 1000 * 60) throw new Error("Too many requests, please wait a few minutes before trying again!");
+      };
+      
+      token = findEmail.id + `${randomUUID()}${randomUUID()}`.replace(/-/g, '');
+      if (findExistToken) await db.verificationToken.update({
         where: { userId: findEmail.id },
         data: {
           token,
           createAt: new Date()
         }
-      });
-    } else {
-      await db.verificationToken.create({
+      }); else await db.verificationToken.create({
         data: {
           userId: findEmail.id,
           token,
         }
       });
-    }
+    };
     
     const { data, error } = await resend.emails.send({
       from: `${appName} <no-replay@resend.dev>`,
       to: [email.toString()],
       subject: 'Email Verification',
       react: EmailVerifyTemplate({
-        url: `${baseUrl}/auth/reset-password?token=${token}`
+        url: `${baseUrl}/auth/email-verify?token=${token}`
       }),
     });
 

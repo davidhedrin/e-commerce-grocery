@@ -17,14 +17,11 @@ import { ZodErrors } from "@/components/zod-errors";
 import { signUpAction } from "@/server/auth";
 import { SonnerPromise } from '@/lib/utils';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { FormState } from '@/lib/models-type';
 import { z } from 'zod';
 
 export default function AuthSignup({ setSigninSignup }: { setSigninSignup: React.Dispatch<React.SetStateAction<number>> }) {
-  const { push } = useRouter();
-
   const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -81,9 +78,9 @@ export default function AuthSignup({ setSigninSignup }: { setSigninSignup: React
         await signUpAction(formData);
   
         toast.success("Account created successfully!", {
-          description: "Welcome aboard!. Let's get started!",
+          description: "A verification email has been sent to your inbox for verify your registration!",
         });
-        push("/dashboard");
+        setSigninSignup(1);
       } catch (error: any) {
         toast.warning("Registration Failed!", {
           description: error.message,
