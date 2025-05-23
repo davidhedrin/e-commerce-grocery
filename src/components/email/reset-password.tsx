@@ -1,10 +1,12 @@
+import Configs from '@/lib/config';
 import { Html, Head, Body, Container, Section, Text, Link, Button, Hr, Img } from '@react-email/components';
 
 type ResetPasswordProps = {
   url: string
 }
 export default function ResetPassword({url}: ResetPasswordProps) {
-  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "Jakarta Trading";
+  const appName = Configs.app_name;
+  const validTimeToken = Configs.valid_email_verify;
 
   return (
     <Html>
@@ -21,7 +23,7 @@ export default function ResetPassword({url}: ResetPasswordProps) {
             <img src='https://cdn-icons-png.freepik.com/512/6357/6357048.png' width={90} style={{mixBlendMode: 'multiply', marginBottom: '15px', marginTop: '10px'}} />
             <Text style={{ fontSize: '17px', fontWeight: 'bold', margin: '0px' }}>Password Reset Request!</Text>
             <Text style={{ fontSize: '14px', marginTop: '0px' }}>
-              Seems like you forgot your password for your Cazh-POS account. Click the button below to start resetting your password.
+              Seems like you forgot your password for your {appName} account. Click the button below to start resetting your password.
             </Text>
 
             <Button
@@ -58,7 +60,7 @@ export default function ResetPassword({url}: ResetPasswordProps) {
                 </Link>
               </Text>
               <Text style={{ fontSize: '13px', color: '#888', lineHeight: '19px', marginBottom: '0px', fontStyle: 'italic' }}>
-                For security reasons, This password reset URL will expire in <b>5 minutes</b>.
+                For security reasons, This password reset URL will expire in <b>{validTimeToken} minutes</b>.
               </Text>
             </Section>
           </Section>

@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import Image from 'next/image';
+import Configs from '@/lib/config';
 
 export default function NotFound() {
-  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "Cazh POS";
+  const appName = Configs.app_name;
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-muted px-6 md:p-5">
       <div className="flex w-full items-center max-w-sm flex-col gap-4">

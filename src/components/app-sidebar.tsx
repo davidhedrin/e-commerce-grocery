@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { GroupAppsMenu } from "@/lib/models-type"
+import Configs from "@/lib/config"
 
 const data = {
   user: {
@@ -47,7 +48,7 @@ const menus: GroupAppsMenu[] = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "";
+  const appName = Configs.app_name;
 
   return (
     <Sidebar variant="inset" {...props}>

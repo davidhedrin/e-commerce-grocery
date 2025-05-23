@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,16 +14,31 @@ import { Input } from '@/components/ui/input';
 import { ZodErrors } from "@/components/zod-errors";
 import { toast } from 'sonner';
 import { SonnerPromise } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { z } from "zod";
 import { FormState } from "@/lib/models-type";
 import { resetPassword } from "@/server/auth";
+import LoadingUI from "@/components/loading-ui";
+import Configs from "@/lib/config";
 
-export default function ResetPassword({ params }: { params: Promise<{ [key: string]: string }> }) {
-  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "";
+export default function ResetPassword() {
+  const appName = Configs.app_name;
   const { push } = useRouter();
-  const { token } = use(params);
+
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+  const [shouldRender, setShouldRender] = useState(false);
+  useEffect(() => {
+    if (!token || token.trim() === '') {
+      toast.warning("Invalid Token!", {
+        description: "Looks like something wrong with your url. Click the link and try again!",
+      });
+      push("/auth");
+    } else {
+      setShouldRender(true);
+    }
+  }, [token]);
 
   const [password, setPassword] = useState('');
   const [coPassword, setCoPassword] = useState('');
@@ -68,20 +83,20 @@ export default function ResetPassword({ params }: { params: Promise<{ [key: stri
     };
     setStateForm({ success: true, errors: {} });
 
-    if (token === undefined || token.toString().trim() === "") {
+    if (!token || token.trim() === '') {
       toast.warning("Invalid Token!", {
-        description: "Looks like your token is missing. Click the link and try again!",
+        description: "Looks like something wrong with your url. Click the link and try again!",
       });
       return;
     }
-    
+
     setLoadingSubmit(true);
     setTimeout(async () => {
       const sonnerSignIn = SonnerPromise("Changing password...", "Wait a moment, we try to change your password");
       try {
         formData.append('token', token);
         await resetPassword(formData);
-  
+
         toast.success("Password Changed!", {
           description: "Your password has been change successfully.",
         });
@@ -93,17 +108,18 @@ export default function ResetPassword({ params }: { params: Promise<{ [key: stri
       }
       toast.dismiss(sonnerSignIn);
       setLoadingSubmit(false);
-    }, 100)
+    }, 100);
   };
 
+  if (!shouldRender) return (<LoadingUI />)
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-muted px-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-4">
         <a href="#" className="flex items-center gap-2 self-center font-medium">
-          <div className="px-1 py-0.5 rounded-lg bg-primary text-primary-foreground">
+          <div className="px-1 py-0.5 rounded-lg bg-blue-600 text-primary-foreground">
             <i className='bx bx-shopping-bag text-3xl'></i>
           </div>
-          <div className="text-xl">
+          <div className="text-xl text-blue-600">
             {appName}
           </div>
         </a>

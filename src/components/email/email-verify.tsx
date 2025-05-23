@@ -1,10 +1,16 @@
+import Configs from '@/lib/config';
 import { Html, Head, Body, Container, Section, Text, Link, Button, Hr, Img } from '@react-email/components';
 
 type ResetPasswordProps = {
-  url: string
+  url: string,
+  otp: string,
 }
-export default function EmailVerifyTemplate({ url }: ResetPasswordProps) {
-  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "Jakarta Trading";
+export default function EmailVerifyTemplate({ url, otp = "123456" }: ResetPasswordProps) {
+  const appName = Configs.app_name;
+  const validTimeToken = Configs.valid_email_verify;
+  const otpStr = otp.toString().padStart(6, '0');
+  const firstPart = otpStr.slice(0, 3);
+  const secondPart = otpStr.slice(3, 6);
 
   return (
     <Html>
@@ -42,6 +48,15 @@ export default function EmailVerifyTemplate({ url }: ResetPasswordProps) {
               Verify Email Address
             </Button>
 
+            <Text style={{ marginTop: '15px', fontSize: '14px', marginBottom: '5px' }}>
+              With enter your One Time Password (OTP):
+            </Text>
+            <Container style={{ background: '#f4f4f4', padding: '20px' }}>
+              <Text style={{ fontSize: '22px', fontWeight: 'bold', letterSpacing: '10px', margin: '0px' }}>
+                {firstPart}-{secondPart}
+              </Text>
+            </Container>
+
             <Text style={{ fontSize: '14px', marginTop: '20px' }}>
               If this was a mistake, just ignore this email and nothing will happen.
             </Text>
@@ -58,7 +73,7 @@ export default function EmailVerifyTemplate({ url }: ResetPasswordProps) {
                 </Link>
               </Text>
               <Text style={{ fontSize: '13px', color: '#888', lineHeight: '19px', marginBottom: '0px', fontStyle: 'italic' }}>
-                For security reasons, This verify email URL will expire in <b>1 minutes</b>.
+                For security reasons, This verify email URL will expire in <b>{validTimeToken} minutes</b>.
               </Text>
             </Section>
           </Section>

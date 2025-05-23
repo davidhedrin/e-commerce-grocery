@@ -4,9 +4,10 @@ import React, { useState } from 'react'
 import AuthSignin from './signin'
 import AuthSignup from './signup';
 import ForgotPassword from './forgot-password';
+import Configs from '@/lib/config';
 
 export default function AuthPage() {
-  const appName = process.env.NEXT_PUBLIC_APPS_NAME || "";
+  const appName = Configs.app_name;
   const [signinSignup, setSigninSignup] = useState(1);
 
   return (

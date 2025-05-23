@@ -1,11 +1,12 @@
 "use server";
 
 import { db } from "../../prisma/db";
-import { hashPassword } from "@/lib/utils";
+import { generateOtp, hashPassword } from "@/lib/utils";
 import { signIn, signOut } from "@/lib/auth-setup"
 import { AuthProviderEnum, RolesEnum } from "@prisma/client";
 import { EmailVerification } from "./email";
 import { randomUUID } from "crypto";
+import Configs from "@/lib/config";
 
 export async function getUserById(id:number) {
   const findData = await db.user.findUnique({ where: { id } });
@@ -56,15 +57,17 @@ export async function signUpAction(formData: FormData) {
         }
       });
       
+      const otpCode = generateOtp(6);
       const token = user.id + `${randomUUID()}${randomUUID()}`.replace(/-/g, '');
       await tx.verificationToken.create({
         data: {
           userId: user.id,
           token,
+          otp: otpCode
         }
       });
 
-      await EmailVerification(user.email, token);
+      await EmailVerification(user.email, token, otpCode);
     });
   } catch (error: any) {
     throw new Error(error.message);
@@ -75,12 +78,12 @@ export async function resetPassword(formData: FormData) {
   try {
     const password = formData.get("password") as string;
     const tokens = formData.get("token") as string;
-    if(tokens === undefined || tokens.toString().trim() === "") throw new Error("Looks like your token is missing. Click and try again!");
+    if(tokens === undefined || tokens.toString().trim() === "") throw new Error("Looks like something wrong with your url. Click the link and try again!");
 
     const findToken = await db.passwordResetToken.findUnique({
       where: {
         token: tokens,
-        createAt: { gt: new Date(Date.now() - 1000 * 60 * 5)},
+        createAt: { gt: new Date(Date.now() - 1000 * 60 * Configs.valid_reset_pass)},
         usingAt: null
       }
     });
@@ -111,6 +114,31 @@ export async function resetPassword(formData: FormData) {
   }
 };
 
-export async function EmailVerify() {
-  
+export async function emailVerify(formData: FormData) {
+  try {
+    const tokens = formData.get("token") as string;
+    const otp_code = formData.get("otp_code") as string;
+    if(tokens === undefined || tokens.toString().trim() === "") throw new Error("Looks like something wrong with your url. Click the link and try again!");
+    if(otp_code === undefined || otp_code.toString().trim() === "" || otp_code.toString().trim().length != 6) throw new Error("Invalid one-time-password (OTP). Try again or generate new OTP!");
+
+    const findToken = await db.verificationToken.findUnique({
+      where: {
+        token: tokens,
+        otp: otp_code,
+        createAt: { gt: new Date(Date.now() - 1000 * 60 * Configs.valid_email_verify)}
+      }
+    });
+    if(!findToken) throw new Error("We couldn't verify. The token or OTP may be incorrect or no longer valid.");
+
+    await db.user.update({
+      where: {
+        id: findToken.userId
+      },
+      data: {
+        email_verified: new Date()
+      }
+    });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
 }

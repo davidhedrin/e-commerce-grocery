@@ -5,10 +5,12 @@ import { Resend } from 'resend';
 import ResetPasswordTemplate from '@/components/email/reset-password';
 import { randomUUID } from "crypto";
 import EmailVerifyTemplate from "@/components/email/email-verify";
+import { generateOtp } from "@/lib/utils";
+import Configs from "@/lib/config";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-const appName = process.env.NEXT_PUBLIC_APPS_NAME || "";
+const baseUrl = Configs.base_url;
+const appName = Configs.app_name;
 
 export async function ForgotPassword(formData: FormData) {
   const email = formData.get("email") as string;
@@ -18,7 +20,10 @@ export async function ForgotPassword(formData: FormData) {
     const findEmail = await db.user.findUnique({
       where: {
         email: email,
-        is_active: true
+        is_active: true,
+        email_verified: {
+          not: null
+        }
       }
     });
     if(!findEmail) throw new Error(`Sorry, but the email is not registration on ${appName}`);
@@ -55,10 +60,11 @@ export async function ForgotPassword(formData: FormData) {
   }
 }
 
-export async function EmailVerification(email: string, token?: string) {
+export async function EmailVerification(email: string, token?: string, otpCode?: string) {
   try{
     if(!resend) throw new Error("Resend api key not found!");
 
+    if(otpCode == undefined || otpCode == null) otpCode = generateOtp(6);
     if(token == undefined || token == null){
       const findEmail = await db.user.findUnique({
         where: {
@@ -87,6 +93,7 @@ export async function EmailVerification(email: string, token?: string) {
         data: {
           userId: findEmail.id,
           token,
+          otp: otpCode
         }
       });
     };
@@ -96,7 +103,8 @@ export async function EmailVerification(email: string, token?: string) {
       to: [email.toString()],
       subject: 'Email Verification',
       react: EmailVerifyTemplate({
-        url: `${baseUrl}/auth/email-verify?token=${token}`
+        url: `${baseUrl}/auth/email-verify?token=${token}`,
+        otp: otpCode,
       }),
     });
 
