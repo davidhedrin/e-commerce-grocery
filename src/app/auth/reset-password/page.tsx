@@ -18,7 +18,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { z } from "zod";
 import { FormState } from "@/lib/models-type";
-import { resetPassword } from "@/server/auth";
+import { checkTokenResetPass, resetPassword } from "@/server/auth";
 import LoadingUI from "@/components/loading-ui";
 import Configs from "@/lib/config";
 
@@ -29,6 +29,17 @@ export default function ResetPassword() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const [shouldRender, setShouldRender] = useState(false);
+  const checkingToken = async (token: string) => {
+    try {
+      await checkTokenResetPass(token);
+      setShouldRender(true);
+    } catch (error: any) {
+      toast.warning("Request Failed!", {
+        description: error.message,
+      });
+      push("/auth");
+    }
+  };
   useEffect(() => {
     if (!token || token.trim() === '') {
       toast.warning("Invalid Token!", {
@@ -36,7 +47,7 @@ export default function ResetPassword() {
       });
       push("/auth");
     } else {
-      setShouldRender(true);
+      checkingToken(token);
     }
   }, [token]);
 

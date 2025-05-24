@@ -8,7 +8,7 @@ import { ZodErrors } from "@/components/zod-errors";
 import Configs from "@/lib/config";
 import { FormState } from "@/lib/models-type";
 import { SonnerPromise } from "@/lib/utils";
-import { emailVerify } from "@/server/auth";
+import { checkTokenEmail, emailVerify } from "@/server/auth";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,6 +23,17 @@ export default function EmailVerifyPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const [shouldRender, setShouldRender] = useState(false);
+  const checkingToken = async (token: string) => {
+    try {
+      await checkTokenEmail(token);
+      setShouldRender(true);
+    } catch (error: any) {
+      toast.warning("Request Failed!", {
+        description: error.message,
+      });
+      push("/auth");
+    }
+  };
   useEffect(() => {
     if (!token || token.trim() === '') {
       toast.warning("Invalid Token!", {
@@ -30,7 +41,7 @@ export default function EmailVerifyPage() {
       });
       push("/auth");
     } else {
-      setShouldRender(true);
+      checkingToken(token);
     }
   }, [token]);
 
@@ -54,7 +65,7 @@ export default function EmailVerifyPage() {
       return;
     };
     setStateForm({ success: true, errors: {} });
-    
+
     if (!token || token.trim() === '') {
       toast.warning("Invalid Token!", {
         description: "Looks like something wrong with your url. Click the link and try again!",

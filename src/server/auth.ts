@@ -74,6 +74,38 @@ export async function signUpAction(formData: FormData) {
   }
 };
 
+export async function checkTokenResetPass(token: string) {
+  try {
+    const findData = await db.passwordResetToken.findUnique({
+      where: { 
+        token,
+        createAt: { gt: new Date(Date.now() - 1000 * 60 * Configs.valid_reset_pass)},
+        usingAt: null
+      }
+    });
+
+    if(!findData) throw new Error("Looks like something wrong with your url. The token may be incorrect or no longer valid.");
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export async function checkTokenEmail(token: string) {
+  try {
+    const findData = await db.verificationToken.findUnique({
+      where: { 
+        token,
+        createAt: { gt: new Date(Date.now() - 1000 * 60 * Configs.valid_email_verify)},
+        usingAt: null
+      }
+    });
+
+    if(!findData) throw new Error("Looks like something wrong with your url. The token may be incorrect or no longer valid.");
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
 export async function resetPassword(formData: FormData) {
   try {
     const password = formData.get("password") as string;
@@ -125,20 +157,28 @@ export async function emailVerify(formData: FormData) {
       where: {
         token: tokens,
         otp: otp_code,
-        createAt: { gt: new Date(Date.now() - 1000 * 60 * Configs.valid_email_verify)}
+        createAt: { gt: new Date(Date.now() - 1000 * 60 * Configs.valid_email_verify)},
+        usingAt: null
       }
     });
     if(!findToken) throw new Error("We couldn't verify. The token or OTP may be incorrect or no longer valid.");
 
-    await db.user.update({
-      where: {
-        id: findToken.userId
-      },
-      data: {
-        email_verified: new Date()
-      }
+    await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: {
+          id: findToken.userId
+        },
+        data: {
+          email_verified: new Date()
+        }
+      });
+
+      await tx.verificationToken.update({
+        where: { token: tokens, userId: findToken.userId },
+        data: { usingAt: new Date() }
+      });
     });
   } catch (error: any) {
     throw new Error(error.message);
   }
-}
+};
