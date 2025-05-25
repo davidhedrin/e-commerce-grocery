@@ -20,6 +20,7 @@ import { SonnerPromise } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
 import { FormState } from '@/lib/models-type';
 import { z } from 'zod';
+import { useLoading } from '@/components/loading-context';
 
 export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React.Dispatch<React.SetStateAction<number>> }) {
   const { push } = useRouter();
@@ -67,6 +68,7 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
         toast.warning(error?.name || "Login failed!", {
           description: error?.message || "An unknown error occurred.",
         });
+        if(error?.name == "Email Not Verify") push(`/auth/send-verification?email=${email}`);
       }
       toast.dismiss(sonnerSignIn);
       setLoadingSubmit(false);

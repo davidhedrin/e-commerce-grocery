@@ -21,6 +21,7 @@ import { FormState } from "@/lib/models-type";
 import { checkTokenResetPass, resetPassword } from "@/server/auth";
 import LoadingUI from "@/components/loading-ui";
 import Configs from "@/lib/config";
+import Image from "next/image";
 
 export default function ResetPassword() {
   const appName = Configs.app_name;
@@ -137,6 +138,15 @@ export default function ResetPassword() {
 
         <Card className="gap-5">
           <CardHeader className="text-center gap-0">
+            <div className="flex justify-center mb-3">
+              <Image
+                src="/assets/img/reset-pass.png"
+                alt="Page Not Found"
+                width={90}
+                height={90}
+              />
+            </div>
+
             <CardTitle className="text-xl">Reset your Password</CardTitle>
             <CardDescription>
               Please fill out the form below to change your new password!

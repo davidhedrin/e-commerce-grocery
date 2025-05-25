@@ -36,7 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           if (!finduser) throw new CustomError("Invalid credentials", "Your email or password is incorrect!");
           if(finduser.is_active == false) throw new CustomError("Account Blocked!", "Please contact administrator if this is a mistake.");
-          if(finduser.email_verified == null) throw new CustomError("Email Not Verify!", "Please confirm your email address verification!");
+          if(finduser.email_verified == null) throw new CustomError("Email Not Verify", "Please confirm your email address verification!");
           
           const verifiedPass = await verifyPassword(credPassword, finduser.password)
           if(!verifiedPass) throw new CustomError("Invalid credentials", "Your email or password is incorrect!");

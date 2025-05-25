@@ -19,7 +19,7 @@ export default function NotFound() {
 
         <Image
           className='pt-5'
-          src="/assets/img/page-not-found2.png"
+          src="/assets/img/page-not-found.png"
           alt="Page Not Found"
           width={300}
           height={300}

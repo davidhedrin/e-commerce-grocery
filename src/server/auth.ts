@@ -2,7 +2,7 @@
 
 import { db } from "../../prisma/db";
 import { generateOtp, hashPassword } from "@/lib/utils";
-import { signIn, signOut } from "@/lib/auth-setup"
+import { signIn, signOut } from "@/lib/auth-setup";
 import { AuthProviderEnum, RolesEnum } from "@prisma/client";
 import { EmailVerification } from "./email";
 import { randomUUID } from "crypto";
@@ -11,7 +11,7 @@ import Configs from "@/lib/config";
 export async function getUserById(id:number) {
   const findData = await db.user.findUnique({ where: { id } });
   return findData;
-}
+};
 
 export async function signInGoogle() {
   await signIn("google");
@@ -23,10 +23,12 @@ export async function signOutAuth() {
 
 export async function signInCredential(formData: FormData) {
   const data = Object.fromEntries(formData);
+  const email = data.email as string;
+  const password = data.password as string;
   const dataSign = {
     redirect: false,
-    email: data.email,
-    password: data.password,
+    email,
+    password,
   };
   
   try {

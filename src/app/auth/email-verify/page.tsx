@@ -113,8 +113,8 @@ export default function EmailVerifyPage() {
               <Image
                 src="/assets/img/envelope-success.png"
                 alt="Page Not Found"
-                width={100}
-                height={100}
+                width={90}
+                height={90}
               />
             </div>
 
