@@ -6,7 +6,7 @@ import { UseAlertDialog } from "@/components/alert-confirm";
 import { toast } from "sonner";
 import { signOutAuth } from "@/server/auth";
 
-export default function Home() {
+export default function Page() {
   const session = useSession();
   const { openAlert } = UseAlertDialog();
 

@@ -23,7 +23,7 @@ import LoadingUI from "@/components/loading-ui";
 import Configs from "@/lib/config";
 import Image from "next/image";
 
-export default function ResetPassword() {
+export default function Page() {
   const appName = Configs.app_name;
   const { push } = useRouter();
 

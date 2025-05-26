@@ -38,12 +38,12 @@ const menus: GroupAppsMenu[] = [
     menus: [
       {
         title: "Product",
-        url: "#",
+        url: "/product",
         icon: "bx bx-package",
         items: [
           {
             title: "Categories",
-            url: "#"
+            url: "/product/category"
           },
         ]
       },

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import Image from 'next/image';
 import Configs from '@/lib/config';
 
-export default function NotFound() {
+export default function Page() {
   const appName = Configs.app_name;
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-muted px-6 md:p-5">

@@ -5,6 +5,7 @@ import { RolesEnum } from "@prisma/client";
 
 const adminMenu = [
   "/dashboard",
+  "/product"
 ];
 
 export async function middleware(request: NextRequest) {
@@ -29,5 +30,6 @@ export const config = {
   matcher: [
     "/auth/:path*",
     "/dashboard",
+    "/product/:path*",
   ],
 }

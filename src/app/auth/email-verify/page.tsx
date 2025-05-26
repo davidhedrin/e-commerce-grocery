@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-export default function EmailVerifyPage() {
+export default function Page() {
   const appName = Configs.app_name;
   const { push } = useRouter();
   const [loadingSubmit, setLoadingSubmit] = useState(false);

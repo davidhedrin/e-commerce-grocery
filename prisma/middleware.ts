@@ -1,13 +1,10 @@
 import { Prisma } from '@prisma/client';
 
 const softDeleteModels = [
-  'BusinessInfo',
-  'Menus',
-  'Roles',
-  'RoleMenus',
   'User',
-  'Account',
-  'StoresInfo',
+  'ProductCategory',
+  'Product',
+  'ProductVariant',
 ];
 
 export const softDeleteMiddleware: Prisma.Middleware = async (params, next) => {

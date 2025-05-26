@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react'
 import { toast } from 'sonner';
 
-export default function SendEmailVerification() {
+export default function Page() {
   const appName = Configs.app_name;
   const { push } = useRouter();
 

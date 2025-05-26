@@ -6,7 +6,7 @@ import AuthSignup from './signup';
 import ForgotPassword from './forgot-password';
 import Configs from '@/lib/config';
 
-export default function AuthPage() {
+export default function Page() {
   const appName = Configs.app_name;
   const [signinSignup, setSigninSignup] = useState(1);
 
