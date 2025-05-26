@@ -9,7 +9,7 @@ import { signOutAuth } from "@/server/auth";
 export default function Home() {
   const session = useSession();
   const { openAlert } = UseAlertDialog();
-  
+
   const signOutAction = async () => {
     const confirmed = await openAlert({
       title: 'Want to Logout?',
@@ -67,18 +67,17 @@ export default function Home() {
             />
             Deploy now
           </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="/auth"
-          >
-            Login Here
-          </a>
           {
-            (session && session.status == "authenticated") && <div onClick={() => signOutAction()}
+            (session && session.status == "authenticated") ? <div onClick={() => signOutAction()}
               className="cursor-pointer rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
             >
               Logout
-            </div>
+            </div> : <a
+              className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
+              href="/auth"
+            >
+              Login Here
+            </a>
           }
         </div>
       </main>

@@ -79,7 +79,7 @@ export async function EmailVerification(email: string, token?: string, otpCode?:
       });
       if (findExistToken && findExistToken.createAt) {
         const timeDifference = new Date().getTime() - new Date(findExistToken.createAt).getTime();
-        if (timeDifference < 1000 * 60) throw new Error("Too many requests, please wait a few minutes before trying again!");
+        if (timeDifference < 1000 * 60 * Configs.valid_email_verify) throw new Error("An email has already been sent. Please wait a minutes before requesting again.");
       };
       
       token = findEmail.id + `${randomUUID()}${randomUUID()}`.replace(/-/g, '');
@@ -87,7 +87,8 @@ export async function EmailVerification(email: string, token?: string, otpCode?:
         where: { userId: findEmail.id },
         data: {
           token,
-          createAt: new Date()
+          createAt: new Date(),
+          otp: otpCode
         }
       }); else await db.verificationToken.create({
         data: {

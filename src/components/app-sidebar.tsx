@@ -15,14 +15,7 @@ import {
 } from "@/components/ui/sidebar"
 import { GroupAppsMenu } from "@/lib/models-type"
 import Configs from "@/lib/config"
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  }
-}
+import { useSession } from "next-auth/react"
 
 const menus: GroupAppsMenu[] = [
   {
@@ -34,14 +27,80 @@ const menus: GroupAppsMenu[] = [
         icon: "bx bx-tachometer",
       },
       {
-        title: "Catalog",
-        url: "#",
-        icon: "bx bx-cart-add",
-      },
-      {
         title: "Transactions",
         url: "#",
-        icon: "bx bx-receipt",
+        icon: "bx bx-cart-add",
+      }
+    ]
+  },
+  {
+    groupName: "Warehouse",
+    menus: [
+      {
+        title: "Product",
+        url: "#",
+        icon: "bx bx-package",
+        items: [
+          {
+            title: "Categories",
+            url: "#"
+          },
+        ]
+      },
+      {
+        title: "Inventory",
+        url: "#",
+        icon: "bx bx-archive"
+      },
+      {
+        title: "Discounts",
+        url: "#",
+        icon: "bx bx-purchase-tag-alt"
+      },
+    ]
+  },
+  {
+    groupName: "Reports & Analytics",
+    menus: [
+      {
+        title: "Sales",
+        url: "#",
+        icon: "bx bx-line-chart"
+      },
+      {
+        title: "Stock",
+        url: "#",
+        icon: "bx bx-bar-chart-alt-2"
+      },
+      {
+        title: "Product Traffic",
+        url: "#",
+        icon: "bx bx-stats"
+      },
+      {
+        title: "Financial",
+        url: "#",
+        icon: "bx bx-calculator"
+      },
+    ]
+  },
+  {
+    groupName: "Setting",
+    menus: [
+      {
+        title: "Store Info",
+        url: "#",
+        icon: "bx bx-store-alt"
+      },
+      {
+        title: "Activity Logs",
+        url: "#",
+        icon: "bx bx-history"
+      },
+      {
+        title: "My Profile",
+        url: "#",
+        icon: "bx bx-id-card"
       },
     ]
   },
@@ -49,6 +108,7 @@ const menus: GroupAppsMenu[] = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const appName = Configs.app_name;
+  const { data, status } = useSession();
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -77,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         }
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user_data={data} />
       </SidebarFooter>
     </Sidebar>
   )

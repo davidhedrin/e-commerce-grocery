@@ -66,3 +66,64 @@ model PasswordResetToken {
   createAt DateTime? @default(now())
   usingAt  DateTime?
 }
+
+model ProductCategory {
+  id       Int               @id @default(autoincrement())
+  slug     String            @unique
+  name     String
+  desc     String?
+  parentId Int?
+  parent   ProductCategory?  @relation("SubCategory", fields: [parentId], references: [id])
+  children ProductCategory[] @relation("SubCategory")
+  products Product[]
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+}
+
+model Product {
+  id          Int              @id @default(autoincrement())
+  slug        String           @unique
+  name        String
+  desc        String?
+  short_desc  String?
+  category_id Int?
+  brand       String?
+  uom         String?
+  img         String?
+  is_active   Boolean?         @default(true)
+  category    ProductCategory? @relation(fields: [category_id], references: [id])
+  variants    ProductVariant[]
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+}
+
+model ProductVariant {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  sku        String   @unique
+  barcode    String?  @unique
+  name       String
+  price      Decimal
+  disc_price Decimal?
+  stock_qty  Int
+  img        String?
+  is_active  Boolean? @default(true)
+  product    Product  @relation(fields: [product_id], references: [id])
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+}

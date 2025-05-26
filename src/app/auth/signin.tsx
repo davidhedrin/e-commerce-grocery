@@ -21,6 +21,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { FormState } from '@/lib/models-type';
 import { z } from 'zod';
 import { useLoading } from '@/components/loading-context';
+import { getSession } from 'next-auth/react';
 
 export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React.Dispatch<React.SetStateAction<number>> }) {
   const { push } = useRouter();
@@ -60,10 +61,11 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
       const sonnerSignIn = SonnerPromise("Signing you in...", "Please wait to Authenticating your credentials");
       try {
         await signInCredential(formData);
+        await getSession();
+        push("/dashboard");
         toast.success("Login successfully!", {
           description: `Welcome back ${email}`,
         });
-        push("/dashboard");
       } catch (error: any) {
         toast.warning(error?.name || "Login failed!", {
           description: error?.message || "An unknown error occurred.",

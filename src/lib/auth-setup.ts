@@ -41,7 +41,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const verifiedPass = await verifyPassword(credPassword, finduser.password)
           if(!verifiedPass) throw new CustomError("Invalid credentials", "Your email or password is incorrect!");
 
-          return finduser;
+          return {
+            ...finduser,
+            name: finduser.fullname
+          };
         } catch (err: any) {
           throw new CustomError(err.name, err.message);
         }
@@ -63,15 +66,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.role = user.role
-      }
-      return token
+        token.name = user.name;
+        token.id = user.id;
+        token.role = user.role;
+      };
+      return token;
     },
     session({ session, token }) {
-      session.user.id = token.id as string
-      session.user.role =  token.role as string
-      return session
+      session.user.name = token.name;
+      session.user.id = token.id as string;
+      session.user.role =  token.role as string;
+      return session;
     },
   },
   session: {

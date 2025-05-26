@@ -28,10 +28,10 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup className="py-1">
-      <SidebarGroupLabel><i className='bx bxs-circle text-[9px] me-1'></i> {items.groupName}</SidebarGroupLabel>
+      <SidebarGroupLabel><i className='bx bxs-circle text-[9px] me-1 text-blue-600'></i> {items.groupName}</SidebarGroupLabel>
       <SidebarMenu className="gap-1 gap-y-0">
-        {items.menus.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+        {items.menus.map((item, x) => (
+          <Collapsible key={x} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={item.title}>
                 <Link href={item.url}>
@@ -49,8 +49,8 @@ export function NavMain({
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
+                      {item.items?.map((subItem, y) => (
+                        <SidebarMenuSubItem key={x + "_" + y}>
                           <SidebarMenuSubButton asChild>
                             <Link href={subItem.url}>
                               <span>{subItem.title}</span>
