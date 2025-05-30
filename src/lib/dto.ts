@@ -1,8 +1,7 @@
 export type DtoProductCategory = {
   id?: number | null;
-  slug: string;
+  slug?: string | null;
   name: string;
   desc?: string | null;
-  parent_id?: number | null;
   is_active?: boolean | null;
 }

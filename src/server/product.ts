@@ -50,7 +50,6 @@ export async function StoreUpdateDataProductCategory(formData: DtoProductCategor
       update: {
         name: formData.name,
         desc: formData.desc,
-        parent_id: formData.parent_id,
         is_active: formData.is_active,
         updatedBy: user?.email
       },
@@ -58,7 +57,6 @@ export async function StoreUpdateDataProductCategory(formData: DtoProductCategor
         slug: stringWithTimestamp(5),
         name: formData.name,
         desc: formData.desc,
-        parent_id: formData.parent_id,
         is_active: formData.is_active,
         createdBy: user?.email
       }

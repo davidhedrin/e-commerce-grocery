@@ -23,7 +23,7 @@ const menus: GroupAppsMenu[] = [
     menus: [
       {
         title: "Dashboard",
-        url: "/apps/dashboard",
+        url: "/dashboard",
         icon: "bx bx-tachometer",
       },
       {

@@ -114,3 +114,15 @@ export function stringWithTimestamp(length: number = 5): string {
   const timestamp = Date.now();
   return `${prefix}${timestamp}`;
 };
+
+export function removeListStateByIndex<T>(array: T[], index: number): T[] {
+  return array.filter((_, i) => i !== index);
+};
+
+export function formatDate(dateString: string | Date, dtStyle: "short" | "full" | "long" | "medium" = "short", tmStyle: "short" | "full" | "long" | "medium" = "short") {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: dtStyle,
+    timeStyle: tmStyle,
+  }).format(date);
+};

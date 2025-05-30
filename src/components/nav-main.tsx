@@ -20,12 +20,15 @@ import {
 } from "@/components/ui/sidebar"
 import { GroupAppsMenu } from "@/lib/models-type"
 import Link from "next/link"
+import { useLoading } from "./loading-context"
 
 export function NavMain({
   items,
 }: {
   items: GroupAppsMenu
 }) {
+  const { setLoading } = useLoading();
+
   return (
     <SidebarGroup className="py-1">
       <SidebarGroupLabel><i className='bx bxs-circle text-[9px] me-1 text-blue-600'></i> {items.groupName}</SidebarGroupLabel>
@@ -34,7 +37,7 @@ export function NavMain({
           <Collapsible key={x} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={item.title}>
-                <Link href={item.url}>
+                <Link onClick={() => setLoading(true)} href={item.url}>
                   <i className={`${item.icon} text-lg`}></i>
                   <span>{item.title}</span>
                 </Link>
@@ -52,7 +55,7 @@ export function NavMain({
                       {item.items?.map((subItem, y) => (
                         <SidebarMenuSubItem key={x + "_" + y}>
                           <SidebarMenuSubButton asChild>
-                            <Link href={subItem.url}>
+                            <Link onClick={() => setLoading(true)} href={subItem.url}>
                               <span>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>

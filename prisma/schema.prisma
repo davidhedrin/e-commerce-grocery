@@ -72,10 +72,7 @@ model ProductCategory {
   slug      String            @unique
   name      String
   desc      String?
-  parent_id  Int?
   is_active Boolean?          @default(true)
-  parent    ProductCategory?  @relation("SubCategory", fields: [parent_id], references: [id])
-  children  ProductCategory[] @relation("SubCategory")
   products  Product[]
 
   createdBy String?

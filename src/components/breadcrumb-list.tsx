@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/breadcrumb"
 import { BreadcrumbModel } from "@/lib/models-type"
 import React from "react"
+import { useLoading } from "./loading-context"
 
 type BreadcrumbListingProps = {
   listBc: BreadcrumbModel[]
 }
 export default function BreadcrumbListing({ listBc }: BreadcrumbListingProps) {
+  const { setLoading } = useLoading();
   return (
     <Breadcrumb className="mb-1">
       <BreadcrumbList>
@@ -22,7 +24,7 @@ export default function BreadcrumbListing({ listBc }: BreadcrumbListingProps) {
           listBc.map((x, i) => {
             return <React.Fragment key={i}>
               <BreadcrumbItem>
-                <BreadcrumbLink href={x.url ?? undefined}>
+                <BreadcrumbLink onClick={() => setLoading(true)} href={x.url ?? undefined}>
                   {x.name}
                 </BreadcrumbLink>
               </BreadcrumbItem>

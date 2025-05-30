@@ -1,4 +1,7 @@
+"use client";
+
 import BreadcrumbListing from "@/components/breadcrumb-list";
+import { useLoading } from "@/components/loading-context";
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -8,13 +11,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useEffect } from "react";
 
 export default function Page() {
+  const { setLoading } = useLoading();
   const listBreadcrumb = [
     { name: "Apps" },
     { name: "Dashboard", url: "/dashboard" }
   ];
 
+  useEffect(() => {
+    const firstInit = async () => {
+      setLoading(false);
+    };
+    firstInit();
+  }, []);
   return (
     <>
       <BreadcrumbListing listBc={listBreadcrumb} />
