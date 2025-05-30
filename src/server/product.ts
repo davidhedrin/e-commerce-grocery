@@ -4,7 +4,7 @@ import { DtoProductCategory } from "@/lib/dto";
 import { db } from "../../prisma/db";
 import { auth } from "@/lib/auth-setup";
 import { PaginateResult, CommonParams } from "@/lib/models-type";
-import { Prisma, ProductCategory } from "@prisma/client";
+import { Prisma, Product, ProductCategory } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { stringWithTimestamp } from "@/lib/utils";
 
@@ -89,3 +89,35 @@ export async function DeleteDataProductCategory(id: number) {
   }
 };
 // End Product Category
+
+// Start Product
+type GetDataProductParams = {
+  where?: Prisma.ProductWhereInput;
+  orderBy?: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[];
+  select?: Prisma.ProductSelect<DefaultArgs> | undefined;
+} & CommonParams;
+export async function GetDataProduct(params: GetDataProductParams): Promise<PaginateResult<Product>> {
+  const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
+  const skip = (curPage - 1) * perPage;
+  const [data, total] = await Promise.all([
+    db.product.findMany({
+      skip,
+      take: perPage,
+      where,
+      orderBy,
+      select
+    }),
+    db.product.count({ where })
+  ]);
+
+  return {
+    data,
+    meta: {
+      page: curPage,
+      limit: perPage,
+      total,
+      totalPages: Math.ceil(total/perPage)
+    }
+  };
+};
+// End Product

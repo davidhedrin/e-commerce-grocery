@@ -107,7 +107,6 @@ export default function Page() {
   }, []);
   // End Master
 
-
   // Modal Add & Edit
   const [openModal, setOpenModal] = useState(false);
   const [stateFormAddEdit, setStateFormAddEdit] = useState<FormState>({ success: false, errors: {} });
@@ -302,7 +301,6 @@ export default function Page() {
         inputPage={inputPage}
         setInputPage={setInputPage}
       />
-
 
       {/* Modal add & edit */}
       <Dialog open={openModal} onOpenChange={setOpenModal}>
