@@ -96,7 +96,8 @@ type GetDataProductParams = {
   orderBy?: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[];
   select?: Prisma.ProductSelect<DefaultArgs> | undefined;
 } & CommonParams;
-export async function GetDataProduct(params: GetDataProductParams): Promise<PaginateResult<Product>> {
+export async function GetDataProduct(params: GetDataProductParams): Promise<PaginateResult<
+Product  & { category: ProductCategory | null}>> {
   const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
   const skip = (curPage - 1) * perPage;
   const [data, total] = await Promise.all([
@@ -105,7 +106,10 @@ export async function GetDataProduct(params: GetDataProductParams): Promise<Pagi
       take: perPage,
       where,
       orderBy,
-      select
+      select: {
+        ...select,
+        category: select?.category,
+      }
     }),
     db.product.count({ where })
   ]);

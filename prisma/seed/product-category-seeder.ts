@@ -1,4 +1,4 @@
-import { AuthProviderEnum, Prisma, PrismaClient, RolesEnum } from '@prisma/client';
+import { AuthProviderEnum, Prisma, PrismaClient } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 
 export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>) => {

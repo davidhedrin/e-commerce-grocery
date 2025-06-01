@@ -25,6 +25,7 @@ import { getSession } from 'next-auth/react';
 
 export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React.Dispatch<React.SetStateAction<number>> }) {
   const { push } = useRouter();
+  const { setLoading } = useLoading();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,10 +63,11 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
       try {
         await signInCredential(formData);
         await getSession();
-        push("/dashboard");
         toast.success("Login successfully!", {
           description: `Welcome back ${email}`,
         });
+        setLoading(true);
+        push("/dashboard");
       } catch (error: any) {
         toast.warning(error?.name || "Login failed!", {
           description: error?.message || "An unknown error occurred.",

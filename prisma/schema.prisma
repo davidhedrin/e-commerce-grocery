@@ -94,7 +94,7 @@ model Product {
   uom         String?
   img         String?
   is_active   Boolean?         @default(true)
-  category    ProductCategory? @relation(fields: [category_id], references: [id])
+  category    ProductCategory? @relation(fields: [category_id], references: [id], onDelete: SetNull)
   variants    ProductVariant[]
 
   createdBy String?
@@ -111,12 +111,12 @@ model ProductVariant {
   sku        String   @unique
   barcode    String?  @unique
   name       String
-  price      Decimal
-  disc_price Decimal?
+  price      Decimal @db.Decimal(9,2)
+  disc_price Decimal? @db.Decimal(9,2)
   stock_qty  Int
   img        String?
   is_active  Boolean? @default(true)
-  product    Product  @relation(fields: [product_id], references: [id])
+  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   createdBy String?
   updatedBy String?
