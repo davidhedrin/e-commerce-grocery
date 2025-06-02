@@ -4,7 +4,7 @@ import { DtoProductCategory } from "@/lib/dto";
 import { db } from "../../prisma/db";
 import { auth } from "@/lib/auth-setup";
 import { PaginateResult, CommonParams } from "@/lib/models-type";
-import { Prisma, Product, ProductCategory } from "@prisma/client";
+import { Prisma, Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { stringWithTimestamp } from "@/lib/utils";
 
@@ -112,6 +112,36 @@ Product  & { category: ProductCategory | null}>> {
       }
     }),
     db.product.count({ where })
+  ]);
+
+  return {
+    data,
+    meta: {
+      page: curPage,
+      limit: perPage,
+      total,
+      totalPages: Math.ceil(total/perPage)
+    }
+  };
+};
+
+type GetDataProductVariantParams = {
+  where?: Prisma.ProductVariantWhereInput;
+  orderBy?: Prisma.ProductVariantOrderByWithRelationInput | Prisma.ProductVariantOrderByWithRelationInput[];
+  select?: Prisma.ProductVariantSelect<DefaultArgs> | undefined;
+} & CommonParams;
+export async function GetDataProductVariant(params: GetDataProductVariantParams): Promise<PaginateResult<ProductVariant>> {
+  const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
+  const skip = (curPage - 1) * perPage;
+  const [data, total] = await Promise.all([
+    db.productVariant.findMany({
+      skip,
+      take: perPage,
+      where,
+      orderBy,
+      select
+    }),
+    db.productVariant.count({ where })
   ]);
 
   return {

@@ -82,13 +82,13 @@ export default function TableTopToolbar({
       <div className="flex flex-col w-full lg:flex-row lg:items-center lg:justify-between gap-2">
         <div className="flex items-center gap-2">
           {
-            setInputSearch && <Command className="border border-b-0">
+            setInputSearch && <Command className="border border-b-0 h-8">
               <CommandInput
                 value={inputSearch}
                 onValueChange={(val) => setInputSearch(val)}
                 onClear={() => setInputSearch("")}
                 showClear={!!inputSearch}
-                className="h-8 lg:w-64"
+                className="h-6 lg:w-64"
                 placeholder="Type to search..."
               />
             </Command>
