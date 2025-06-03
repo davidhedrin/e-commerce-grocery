@@ -47,7 +47,8 @@ export default function Tiptap({ content, setContent, placeholder, className }: 
     onUpdate: ({ editor }) => {
       const text = editor.getHTML();
       setContent(text);
-    }
+    },
+    immediatelyRender: false
   })
 
   return (

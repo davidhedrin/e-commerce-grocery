@@ -3,9 +3,15 @@ import { twMerge } from "tailwind-merge"
 import bcrypt from "bcryptjs";
 import { ExternalToast, toast } from "sonner";
 import { TableShortList, TableThModel } from "./models-type";
+import { PictureTypeEnum } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+};
+
+export const pictureTypeLabels: Record<PictureTypeEnum, string> = {
+  FILE: 'Upload File',
+  URL: 'URL',
 };
 
 export async function hashPassword(password: string, salt: number = 10): Promise<string> {

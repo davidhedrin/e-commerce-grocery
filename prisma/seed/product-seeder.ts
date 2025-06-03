@@ -1,4 +1,4 @@
-import { AuthProviderEnum, Prisma, PrismaClient } from '@prisma/client';
+import { AuthProviderEnum, PictureTypeEnum, Prisma, PrismaClient } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 
 export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>) => {
@@ -14,6 +14,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Crisp and tangy green apples.",
           brand: "Nature's Best",
           uom: "Piece",
+          img_type: PictureTypeEnum.URL,
           img: "https://fisherscart.com/cdn/shop/products/greenapple.png?v=1672232680",
           category_id: 1,
           createdBy: "SEEDER"
@@ -25,6 +26,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Sweet and fresh red bell pepper.",
           brand: "Green Valley",
           uom: "Piece",
+          img_type: PictureTypeEnum.URL,
           img: "https://bonnieplants.com/cdn/shop/products/060721_T110854_202044_202178_Bonnie_PepperRedBell_ALT_01.jpg?v=1706042177",
           category_id: 1,
           createdBy: "SEEDER"
@@ -36,6 +38,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Omega-3 rich fresh salmon.",
           brand: "Ocean's Best",
           uom: "Kilogram",
+          img_type: PictureTypeEnum.URL,
           img: "https://m.media-amazon.com/images/I/817y+lN3ohL._AC_UF894,1000_QL80_.jpg",
           category_id: 2,
           createdBy: "SEEDER"
@@ -47,6 +50,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Organic boneless chicken breast.",
           brand: "Pure Farm",
           uom: "Kilogram",
+          img_type: PictureTypeEnum.URL,
           img: "https://greenpasturefarms.co.uk/wp-content/uploads/2018/05/Chicken-Whole-02.jpg",
           category_id: 2,
           createdBy: "SEEDER"
@@ -58,6 +62,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Organic, low-fat cottage cheese.",
           brand: "Green Dairy",
           uom: "Gram",
+          img_type: PictureTypeEnum.URL,
           img: "https://kalonacreamery.com/wp-content/uploads/2019/01/Square-Editing-18.jpg",
           category_id: 3,
           createdBy: "SEEDER"
@@ -69,6 +74,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Healthy free-range eggs.",
           brand: "Farm Fresh",
           uom: "Dozen",
+          img_type: PictureTypeEnum.URL,
           img: "https://ganico.co.za/wp-content/uploads/2020/11/Farm-Eggs-04.jpg",
           category_id: 3,
           createdBy: "SEEDER"
@@ -80,6 +86,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "High-fiber whole grain bread.",
           brand: "Bread Co.",
           uom: "Slice",
+          img_type: PictureTypeEnum.URL,
           img: "https://www.organicsbylee.com/wp-content/uploads/2019/03/wholewheatbread-copy.jpg",
           category_id: 4,
           createdBy: "SEEDER"
@@ -91,6 +98,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Chocolate-filled croissant.",
           brand: "Pastry Delight",
           uom: "Piece",
+          img_type: PictureTypeEnum.URL,
           img: "https://pastriesbyrandolph.com/wp-content/uploads/2019/03/chocolate-croissant.jpg",
           category_id: 4,
           createdBy: "SEEDER"
@@ -102,6 +110,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Mixed frozen vegetables for quick meals.",
           brand: "Fresh Choice",
           uom: "Kilogram",
+          img_type: PictureTypeEnum.URL,
           img: "https://www.laurafuentes.com/wp-content/uploads/2022/12/Roasted-frozen-vegetables_RC-SQ.jpg",
           category_id: 5,
           createdBy: "SEEDER"
@@ -113,6 +122,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Crispy frozen French fries.",
           brand: "Golden Harvest",
           uom: "Kilogram",
+          img_type: PictureTypeEnum.URL,
           img: "https://www.dadcooksdinner.com/wp-content/uploads/2022/11/Instant-Pot-Air-Fryer-Frozen-French-Fries-1280x-DSCF1341.jpg",
           category_id: 5,
           createdBy: "SEEDER"
@@ -124,6 +134,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Soft chocolate chip cookies.",
           brand: "Sweet Treats",
           uom: "Pack",
+          img_type: PictureTypeEnum.URL,
           img: "https://handletheheat.com/wp-content/uploads/2020/10/BAKERY-STYLE-CHOCOLATE-CHIP-COOKIES-9-637x637-1-500x500.jpg",
           category_id: 6,
           createdBy: "SEEDER"
@@ -135,6 +146,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Classic cola soda.",
           brand: "Fizzy Pop",
           uom: "Liter",
+          img_type: PictureTypeEnum.URL,
           img: "https://s.alicdn.com/@sc04/kf/H75bc495024e143acab78b71f0414f72ck.jpg_720x720q50.jpg",
           category_id: 6,
           createdBy: "SEEDER"
@@ -146,6 +158,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Versatile all-purpose cleaner.",
           brand: "CleanMaster",
           uom: "Liter",
+          img_type: PictureTypeEnum.URL,
           img: "https://berducdn.com/img/1200/bsob0d3ebsof2awrmp_2/h42tHszBCzh0LP1h42l4n2lgpxbGLER4iBkYvctKOwww.jpg",
           category_id: 7,
           createdBy: "SEEDER"
@@ -157,6 +170,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Strong and absorbent paper towels.",
           brand: "QuickWipe",
           uom: "Roll",
+          img_type: PictureTypeEnum.URL,
           img: "https://assets.onegoodthingbyjillee.com/2023/06/best-paper-towels.jpg",
           category_id: 7,
           createdBy: "SEEDER"
@@ -168,6 +182,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Daily Vitamin C supplement.",
           brand: "HealthPlus",
           uom: "Tablet",
+          img_type: PictureTypeEnum.URL,
           img: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/ndm/ndm01650/l/41.jpg",
           category_id: 8,
           createdBy: "SEEDER"
@@ -179,6 +194,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Natural aloe vera gel.",
           brand: "PureNature",
           uom: "Gram",
+          img_type: PictureTypeEnum.URL,
           img: "https://meihao.shopping/wp-content/uploads/2019/12/111007-1.jpg",
           category_id: 8,
           createdBy: "SEEDER"
@@ -190,6 +206,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Comfortable baby diapers.",
           brand: "BabySoft",
           uom: "Pack",
+          img_type: PictureTypeEnum.URL,
           img: "https://image.astronauts.cloud/product-images/2025/3/babyhappys56_0f920c9b-9f60-4873-8912-21a57f4e3410_900x900.jpg",
           category_id: 9,
           createdBy: "SEEDER"
@@ -201,6 +218,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Fun and gentle kids toothbrush.",
           brand: "BrightSmiles",
           uom: "Piece",
+          img_type: PictureTypeEnum.URL,
           img: "https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//103/MTA-50319759/jordan_jordan-kids-toothbrush-hello-smile-soft_full01.jpg",
           category_id: 9,
           createdBy: "SEEDER"
@@ -212,6 +230,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Balanced nutrition for dogs.",
           brand: "PetCare",
           uom: "Kilogram",
+          img_type: PictureTypeEnum.URL,
           img: "https://www.petsense.com/cdn/shop/files/1879992.jpg?v=1726670805",
           category_id: 10,
           createdBy: "SEEDER"
@@ -223,6 +242,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           short_desc: "Odor-controlling cat litter.",
           brand: "KittyClean",
           uom: "Kilogram",
+          img_type: PictureTypeEnum.URL,
           img: "https://id-test-11.slatic.net/p/b4b9f59d484849f480bbb48f05bf3fd3.jpg",
           category_id: 10,
           createdBy: "SEEDER"

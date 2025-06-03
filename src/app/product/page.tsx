@@ -15,13 +15,12 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 import { ZodErrors } from "@/components/zod-errors";
 import Configs from "@/lib/config";
 import { FormState, TableShortList, TableThModel } from "@/lib/models-type";
-import { formatDate, normalizeSelectObj, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
+import { formatDate, normalizeSelectObj, pictureTypeLabels, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
 import { GetDataProduct, GetDataProductCategory, GetDataProductVariant } from "@/server/product";
-import { Product, ProductCategory, ProductVariant } from "@prisma/client";
+import { PictureTypeEnum, Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -143,6 +142,17 @@ export default function Page() {
   const [valueSelectCategory, setValueSelectCategory] = useState("");
   const [valueSelectUom, setValueSelectUom] = useState("");
   const [txtBrand, setTxtBrand] = useState("");
+  const [txtPictureType, setTxtPictureType] = useState<PictureTypeEnum | "">("");
+  const [filePictureProduct, setFilePictureProduct] = useState<File>();
+  const [urlPictureProduct, setUrlPictureProduct] = useState("");
+  const onChangePictureType = (type: PictureTypeEnum) => {
+    setFilePictureProduct(undefined);
+    setUrlPictureProduct("");
+    setTxtPictureType(type);
+  };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setFilePictureProduct(e.target.files[0]);
+  };
   const FormSchemaAddEdit = z.object({
     is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
     name: z.string().min(1, { message: 'Name is required field.' }).trim(),
@@ -599,44 +609,67 @@ export default function Page() {
                     </Popover>
                   </div>
                 </div>
-                <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-                  <Label className="gap-0" htmlFor="store_desc">Short Description</Label>
+                <div className="col-span-12 sm:col-span-6 grid gap-2">
+                  <Label className="gap-0" htmlFor="picture_type">Picture Type<span className="text-red-500">*</span></Label>
                   <div>
-                    <Input value={txtShortDesc} onChange={(e) => setTxtShortDesc(e.target.value)} type="text" id="store_desc" name="store_desc" placeholder="Enter description if any" />
-                  </div>
-                </div>
-                <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-                  <Label className="gap-0" htmlFor="picture_type">Picture Type</Label>
-                  <div>
-                    <Select name="picture_type">
+                    <Select value={txtPictureType ?? ""} onValueChange={(val) => onChangePictureType(val as PictureTypeEnum)} name="picture_type">
                       <SelectTrigger id="picture_type" className="w-full">
                         <SelectValue placeholder="Select picture type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem value="file">Upload File</SelectItem>
-                          <SelectItem value="url">URL</SelectItem>
+                          {
+                            Object.values(PictureTypeEnum).map((x, i) => (
+                              <SelectItem key={i} value={x}>{pictureTypeLabels[x]}</SelectItem>
+                            ))
+                          }
                         </SelectGroup>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
-                <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-                  <Label className="gap-0" htmlFor="picture">Picture</Label>
+                {
+                  txtPictureType ? (
+                    <div className="col-span-12 sm:col-span-6 grid gap-2">
+                      <Label className="gap-0" htmlFor="picture">Picture<span className="text-red-500">*</span></Label>
+                      <div className={txtPictureType === PictureTypeEnum.FILE ? "" : "hidden"}>
+                        <Input onChange={handleFileChange} type="file" id="picture" name="picture" />
+                      </div>
+
+                      <div className={txtPictureType === PictureTypeEnum.URL ? "" : "hidden"}>
+                        <Input
+                          value={urlPictureProduct ?? ""}
+                          onChange={(e) => setUrlPictureProduct(e.target.value)}
+                          type="text"
+                          id="picture"
+                          name="picture"
+                          placeholder="Enter picture url product"
+                        />
+                      </div>
+                    </div>
+                  ) : <div className="col-span-12 sm:col-span-6 grid gap-2">
+                    <Label className="gap-0" htmlFor="picture">Picture<span className="text-red-500">*</span></Label>
+                    <div>
+                      <Input disabled type="text" id="picture" name="picture" placeholder="Please select picture type" />
+                    </div>
+                  </div>
+                }
+                <div className="col-span-12 grid gap-2">
+                  <Label className="gap-0" htmlFor="store_desc">Short Description</Label>
                   <div>
-                    <Input type="text" id="picture" name="picture" placeholder="Enter product code" />
+                    <Input value={txtShortDesc} onChange={(e) => setTxtShortDesc(e.target.value)} type="text" id="store_desc" name="store_desc" placeholder="Enter description if any" />
                   </div>
                 </div>
                 <div className="col-span-12 grid gap-2 mb-1">
                   <Label className="gap-0">Description</Label>
-                  <Tiptap content={txtDesc} setContent={setTxtDesc} placeholder="Enter product description if any" className="h-24" />
+                  <Tiptap content={txtDesc} setContent={setTxtDesc} placeholder="Enter product description if any" className="min-h-24" />
                 </div>
 
                 <div className="col-span-12 grid gap-2">
                   <hr />
                   <div>
-                    <Label className="gap-0">Product Variant<span className="text-red-500">*</span></Label>
-                    <p className="text-muted-foreground text-sm">Here you can enter the variant of the product (Minimal 1)</p>
+                    <Label className="gap-0">Product Variant</Label>
+                    <p className="text-muted-foreground text-sm">Here you can enter variants after completing the product submission (Minimum 1)</p>
                   </div>
                   <div className="grid gap-2">
                     <TableTopToolbar
@@ -720,7 +753,8 @@ export default function Page() {
 
             <DialogFooter className="p-4 pt-0 mt-3">
               <Button type="submit" className="primary" size={'sm'} formNoValidate>Submit</Button>
-              <Button type="button" onClick={() => closeModalAddEdit()} variant={'outline'} size={'sm'}>Cancel</Button>
+              <Button type="submit" variant={"outline"} size={'sm'} formNoValidate>Submit & Close</Button>
+              <Button type="button" onClick={() => closeModalAddEdit()} variant={"ghost"} size={'sm'}>Cancel</Button>
             </DialogFooter>
           </form>
         </DialogContent>

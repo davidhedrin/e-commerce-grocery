@@ -88,7 +88,7 @@ export default function TableTopToolbar({
                 onValueChange={(val) => setInputSearch(val)}
                 onClear={() => setInputSearch("")}
                 showClear={!!inputSearch}
-                className="h-6 lg:w-64"
+                className="h-6 lg:w-52"
                 placeholder="Type to search..."
               />
             </Command>

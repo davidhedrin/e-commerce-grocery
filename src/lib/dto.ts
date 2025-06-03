@@ -1,3 +1,5 @@
+import { PictureTypeEnum } from "@prisma/client";
+
 export type DtoProductCategory = {
   id?: number | null;
   slug?: string | null;
@@ -15,10 +17,10 @@ export type DtoProduct = {
   category_id?: number | null;
   brand?: string | null;
   uom?: string | null;
+  img_type?: PictureTypeEnum;
   img?: string | null;
+  file_img?: File | null;
   is_active?: boolean | null;
-
-  variants?: DtoProductVariant[] | null;
 };
 
 export type DtoProductVariant = {
@@ -30,6 +32,8 @@ export type DtoProductVariant = {
   price?: string | null;
   disc_price?: string | null;
   stock_qty?: string | null;
+  img_type?: PictureTypeEnum;
   img?: string | null;
+  file_img?: File | null;
   is_active?: boolean | null;
 };

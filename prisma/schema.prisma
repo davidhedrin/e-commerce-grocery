@@ -27,6 +27,11 @@ enum AuthProviderEnum {
   @@map("AuthProviderEnum")
 }
 
+enum PictureTypeEnum {
+  FILE
+  URL
+}
+
 model User {
   id             Int              @id @default(autoincrement())
   email          String           @unique
@@ -68,11 +73,11 @@ model PasswordResetToken {
 }
 
 model ProductCategory {
-  id        Int               @id @default(autoincrement())
-  slug      String            @unique
+  id        Int       @id @default(autoincrement())
+  slug      String    @unique
   name      String
   desc      String?
-  is_active Boolean?          @default(true)
+  is_active Boolean?  @default(true)
   products  Product[]
 
   createdBy String?
@@ -92,6 +97,7 @@ model Product {
   category_id Int?
   brand       String?
   uom         String?
+  img_type    PictureTypeEnum?
   img         String?
   is_active   Boolean?         @default(true)
   category    ProductCategory? @relation(fields: [category_id], references: [id], onDelete: SetNull)
@@ -106,17 +112,18 @@ model Product {
 }
 
 model ProductVariant {
-  id         Int      @id @default(autoincrement())
+  id         Int              @id @default(autoincrement())
   product_id Int
-  sku        String   @unique
-  barcode    String?  @unique
+  sku        String           @unique
+  barcode    String?          @unique
   name       String
-  price      Decimal @db.Decimal(9,2)
-  disc_price Decimal? @db.Decimal(9,2)
+  price      Decimal          @db.Decimal(9, 2)
+  disc_price Decimal?         @db.Decimal(9, 2)
   stock_qty  Int
+  img_type   PictureTypeEnum?
   img        String?
-  is_active  Boolean? @default(true)
-  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  is_active  Boolean?         @default(true)
+  product    Product          @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   createdBy String?
   updatedBy String?
