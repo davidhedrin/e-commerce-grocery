@@ -18,7 +18,7 @@ export type DtoProduct = {
   brand?: string | null;
   uom?: string | null;
   img_type?: PictureTypeEnum;
-  img?: string | null;
+  img_url?: string | null;
   file_img?: File | null;
   is_active?: boolean | null;
 };
@@ -33,7 +33,7 @@ export type DtoProductVariant = {
   disc_price?: string | null;
   stock_qty?: string | null;
   img_type?: PictureTypeEnum;
-  img?: string | null;
+  img_url?: string | null;
   file_img?: File | null;
   is_active?: boolean | null;
 };

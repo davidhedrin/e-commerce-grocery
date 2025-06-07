@@ -53,7 +53,7 @@ const menus: GroupAppsMenu[] = [
         icon: "bx bx-archive"
       },
       {
-        title: "Discounts",
+        title: "Voucher",
         url: "#",
         icon: "bx bx-purchase-tag-alt"
       },

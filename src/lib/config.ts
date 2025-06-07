@@ -38,6 +38,7 @@ const Configs = {
     { key: "ampoule", name: "Ampoule" },
     { key: "sachet", name: "Sachet" },
     { key: "strip", name: "Strip" },
+    { key: "tablet", name: "Tablet" },
   ]
 };
 export default Configs;

@@ -1,12 +1,13 @@
 "use server";
 
-import { DtoProductCategory } from "@/lib/dto";
+import { DtoProduct, DtoProductCategory } from "@/lib/dto";
 import { db } from "../../prisma/db";
 import { auth } from "@/lib/auth-setup";
-import { PaginateResult, CommonParams } from "@/lib/models-type";
-import { Prisma, Product, ProductCategory, ProductVariant } from "@prisma/client";
+import { PaginateResult, CommonParams, UploadFileRespons } from "@/lib/models-type";
+import { PictureTypeEnum, Prisma, Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { stringWithTimestamp } from "@/lib/utils";
+import { UploadFile } from "./common";
 
 // Start Product Category
 type GetDataProductCategoryParams = {
@@ -123,6 +124,55 @@ Product  & { category: ProductCategory | null}>> {
       totalPages: Math.ceil(total/perPage)
     }
   };
+};
+export async function StoreUpdateDataProduct(formData: DtoProduct) {
+  try {
+    const session = await auth();
+    if(!session) throw new Error("Authentication credential not Found!");
+    const { user } = session;
+
+    var upFile = formData.file_img != null ? await UploadFile(formData.file_img, "public/upload/product") : null;
+    var imgName = upFile != null && upFile.status == true ? upFile.filename : null;
+    if(formData.img_type === PictureTypeEnum.FILE && imgName != null) formData.img_url = imgName;
+
+    const data_id = formData.id ?? 0;
+    await db.product.upsert({
+      where: { id: data_id },
+      update: {
+        name: formData.name,
+        desc: formData.desc,
+        short_desc: formData.short_desc,
+        category_id: formData.category_id,
+        brand: formData.brand,
+        uom: formData.uom,
+        img_type: formData.img_type,
+        img: formData.img_url,
+        is_active: formData.is_active,
+        updatedBy: user?.email
+      },
+      create: {
+        slug: stringWithTimestamp(6),
+        name: formData.name,
+        desc: formData.desc,
+        short_desc: formData.short_desc,
+        category_id: formData.category_id,
+        brand: formData.brand,
+        uom: formData.uom,
+        img_type: formData.img_type,
+        img: formData.img_url,
+        is_active: formData.is_active,
+        createdBy: user?.email
+      }
+    });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+export async function GetDataProductById(id: number): Promise<Product | null> {
+  const getData = await db.product.findUnique({
+    where: { id }
+  });
+  return getData;
 };
 
 type GetDataProductVariantParams = {

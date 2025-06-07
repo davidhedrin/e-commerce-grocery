@@ -19,13 +19,14 @@ import { ZodErrors } from "@/components/zod-errors";
 import Configs from "@/lib/config";
 import { FormState, TableShortList, TableThModel } from "@/lib/models-type";
 import { formatDate, normalizeSelectObj, pictureTypeLabels, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
-import { GetDataProduct, GetDataProductCategory, GetDataProductVariant } from "@/server/product";
+import { GetDataProduct, GetDataProductById, GetDataProductCategory, GetDataProductVariant, StoreUpdateDataProduct } from "@/server/product";
 import { PictureTypeEnum, Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DtoProduct } from "@/lib/dto";
 
 export default function Page() {
   const { setLoading } = useLoading();
@@ -142,62 +143,116 @@ export default function Page() {
   const [valueSelectCategory, setValueSelectCategory] = useState("");
   const [valueSelectUom, setValueSelectUom] = useState("");
   const [txtBrand, setTxtBrand] = useState("");
-  const [txtPictureType, setTxtPictureType] = useState<PictureTypeEnum | "">("");
+  const [txtPictureType, setTxtPictureType] = useState<PictureTypeEnum | undefined>();
   const [filePictureProduct, setFilePictureProduct] = useState<File>();
   const [urlPictureProduct, setUrlPictureProduct] = useState("");
+  const [urlPictureProductPrev, setUrlPictureProductPrev] = useState<string>();
   const onChangePictureType = (type: PictureTypeEnum) => {
     setFilePictureProduct(undefined);
     setUrlPictureProduct("");
     setTxtPictureType(type);
   };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) setFilePictureProduct(e.target.files[0]);
+    if (e.target.files) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const objectUrl = URL.createObjectURL(file);
+      setUrlPictureProductPrev(objectUrl);
+      setFilePictureProduct(file);
+    } else {
+      setUrlPictureProductPrev(undefined);
+      setFilePictureProduct(undefined);
+    }
+  };
+  const handleRemoveImageProduct = () => {
+    setUrlPictureProductPrev(undefined);
+    setFilePictureProduct(undefined);
   };
   const FormSchemaAddEdit = z.object({
     is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
     name: z.string().min(1, { message: 'Name is required field.' }).trim(),
     slug: z.string().min(1, { message: 'Slug is required field.' }).trim(),
     category: z.string().min(1, { message: 'Category is required field.' }).trim(),
+    picture_type: z.string().min(1, { message: 'Picture type is required field.' }).trim()
   });
   const closeModalAddEdit = () => {
     setStateFormAddEdit({ success: true, errors: {} });
     setOpenModal(false);
   };
-  // const createDtoData = (): DtoProductCategory => {
-  //   const newData: DtoProductCategory = {
-  //     id: addEditId,
-  //     slug: txtSlug,
-  //     name: txtName,
-  //     desc: txtDesc.trim() != "" ? txtDesc : null,
-  //     is_active: isActive === "true" ? true : false,
-  //   };
-  //   return newData;
-  // };
+  const createDtoData = (): DtoProduct => {
+    const newData: DtoProduct = {
+      id: addEditId,
+      slug: txtSlug,
+      name: txtName,
+      desc: txtDesc,
+      short_desc: txtShortDesc.trim() != "" ? txtShortDesc : null,
+      category_id: parseInt(valueSelectCategory),
+      brand: txtBrand.trim() != "" ? txtBrand : null,
+      uom: valueSelectUom,
+      img_type: txtPictureType as PictureTypeEnum,
+      img_url: urlPictureProduct.trim() != "" ? urlPictureProduct : null,
+      file_img: filePictureProduct,
+      is_active: isActive === "true" ? true : false,
+    };
+    return newData;
+  };
   const openModalAddEdit = async (id?: number) => {
-    // if (id) {
-    //   const openSonner = SonnerPromise("Loading open form...");
-    //   const data = await GetDataProductCategoryById(id);
-    //   if (data) {
-    //     setAddEditId(data.id);
-    //     setIsActive(data.is_active != null ? data.is_active.toString() : undefined);
-    //     setTxtSlug(data.slug);
-    //     setTxtName(data.name);
-    //     setTxtDesc(data.desc || "");
-    //   }
-    //   toast.dismiss(openSonner);
-    // } else {
-    //   setAddEditId(null);
-    //   setIsActive(undefined);
-    //   setTxtSlug("");
-    //   setTxtName("");
-    //   setTxtDesc("");
-    // }
+    if (id) {
+      const openSonner = SonnerPromise("Loading open form...");
+      const data = await GetDataProductById(id);
+      if (data) {
+        setAddEditId(data.id);
+        setIsActive(data.is_active != null ? data.is_active.toString() : undefined);
+        setTxtSlug(data.slug);
+        setTxtName(data.name);
+        setTxtShortDesc(data.short_desc || "");
+        setTxtDesc(data.desc || undefined);
+        setValueSelectCategory(data.category_id ? data.category_id.toString() : "");
+        setValueSelectUom(data.uom || "");
+        setTxtBrand(data.brand || "");
+        setTxtPictureType(data.img_type || undefined);
+        setFilePictureProduct(undefined);
+        setUrlPictureProduct(data.img || "");
+      }
+      toast.dismiss(openSonner);
+    } else {
+      setAddEditId(null);
+      setIsActive(undefined);
+      setTxtSlug("");
+      setTxtName("");
+      setTxtShortDesc("");
+      setTxtDesc(undefined);
+      setValueSelectCategory("");
+      setValueSelectUom("");
+      setTxtBrand("");
+      setTxtPictureType(undefined);
+      setFilePictureProduct(undefined);
+      setUrlPictureProduct("");
+    }
     setOpenModal(true);
   };
   const handleFormSubmitAddEdit = async (formData: FormData) => {
+    formData.append("slug", txtSlug);
     formData.append("category", valueSelectCategory);
+    formData.append("picture_file", filePictureProduct?.name || "");
+    formData.append("picture_url", urlPictureProduct);
+
+    let formSchame = FormSchemaAddEdit;
+    if (txtPictureType === PictureTypeEnum.FILE) { // File name in input gone
+      const newFormSchame = FormSchemaAddEdit.extend({
+        picture_file: z.string().min(1, { message: 'Picture file is required field.' }).trim()
+      });
+      formSchame = newFormSchame;
+    } else if (txtPictureType === PictureTypeEnum.URL) {
+      const newFormSchame = FormSchemaAddEdit.extend({
+        picture_url: z.string().min(1, { message: 'Image url is required field.' }).trim()
+      });
+      formSchame = newFormSchame;
+    };
+
     const data = Object.fromEntries(formData);
-    const valResult = FormSchemaAddEdit.safeParse(data);
+    const valResult = formSchame.safeParse(data);
     if (!valResult.success) {
       setStateFormAddEdit({
         success: false,
@@ -223,7 +278,7 @@ export default function Page() {
 
       const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
       try {
-        // await StoreUpdateDataProductCategory(createDtoData());
+        await StoreUpdateDataProduct(createDtoData());
         await fatchDatas();
         toast.success("Submit successfully!", {
           description: "Your submission has been successfully completed!",
@@ -305,62 +360,8 @@ export default function Page() {
   };
   // End Popover Seach
 
-  // Table product variant
+  // Product variant
   const [openModalVariant, setOpenModalVariant] = useState(false);
-  const [inputPageVariant, setInputPageVariant] = useState("1");
-  const [pageTableVariant, setPageTableVariant] = useState(1);
-  const [perPageVariant, setPerPageVariant] = useState(10);
-  const [totalPageVariant, setTotalPageVariant] = useState(0);
-  const [totalCountVariant, setTotalCountVariant] = useState(0);
-  const [datasVariant, setDatasVariant] = useState<ProductVariant[] | null>(null);
-  const [inputSearchVariant, setInputSearchVariant] = useState("");
-  const [tblSortListVariant, setTblSortListVariant] = useState<TableShortList[]>([]);
-  const [tblThColomnsVariant, setTblThColomnsVariant] = useState<TableThModel[]>([
-    { name: "SKU", key: "sku", key_sort: "sku", IsVisible: true },
-    { name: "Name", key: "name", key_sort: "name", IsVisible: true },
-    { name: "Barcode", key: "barcode", key_sort: "barcode", IsVisible: true },
-    { name: "Price", key: "price", key_sort: "price", IsVisible: true },
-    { name: "Stock", key: "stock_qty", key_sort: "stock_qty", IsVisible: true },
-    { name: "Status", key: "is_active", key_sort: "is_active", IsVisible: false }
-  ]);
-  const fatchDatasVariant = async (page: number = pageTable, countPage: number = perPage) => {
-    const selectObj = normalizeSelectObj(tblThColomnsVariant);
-    const orderObj = sortListToOrderBy(tblSortListVariant);
-
-    try {
-      const result = await GetDataProductVariant({
-        curPage: page,
-        perPage: countPage,
-        where: {
-          product_id: addEditId || 0,
-          OR: [
-            { name: { contains: inputSearch.trim(), mode: "insensitive" } },
-            { sku: { contains: inputSearch.trim(), mode: "insensitive" } },
-            { barcode: { contains: inputSearch.trim(), mode: "insensitive" } },
-          ]
-        },
-        select: {
-          id: true,
-          ...selectObj
-        },
-        orderBy: orderObj
-      });
-      setTotalPageVariant(result.meta.totalPages);
-      setTotalCountVariant(result.meta.total);
-      setPageTableVariant(result.meta.page);
-      setInputPageVariant(result.meta.page.toString());
-
-      setDatasVariant(result.data);
-    } catch (error: any) {
-      toast.warning("Something's gone wrong!", {
-        description: "We can't proccess your request, Please try again.",
-      });
-    }
-  };
-  const closeModalAddEditVariant = () => {
-    setStateFormAddEdit({ success: true, errors: {} });
-    setOpenModal(false);
-  };
   const openModalAddEditVariant = async (id?: number) => {
     // if (id) {
     //   const openSonner = SonnerPromise("Loading open form...");
@@ -441,7 +442,7 @@ export default function Page() {
                   {'createdAt' in data && (<TableCell>{data.createdAt ? formatDate(data.createdAt, "medium") : "-"}</TableCell>)}
 
                   <TableCell className="text-right space-x-1">
-                    <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
+                    <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
                     <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
                   </TableCell>
                 </TableRow>
@@ -563,7 +564,7 @@ export default function Page() {
                   </div>
                 </div>
                 <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-                  <Label className="gap-0" htmlFor="uom">Measurement(UOM)</Label>
+                  <Label className="gap-0">Measurement(UOM)</Label>
                   <div>
                     <Popover open={openSelectUom} onOpenChange={setOpenSelectUom}>
                       <PopoverTrigger asChild>
@@ -609,10 +610,10 @@ export default function Page() {
                     </Popover>
                   </div>
                 </div>
-                <div className="col-span-12 sm:col-span-6 grid gap-2">
+                <div className="col-span-12 grid gap-2">
                   <Label className="gap-0" htmlFor="picture_type">Picture Type<span className="text-red-500">*</span></Label>
                   <div>
-                    <Select value={txtPictureType ?? ""} onValueChange={(val) => onChangePictureType(val as PictureTypeEnum)} name="picture_type">
+                    <Select defaultValue={txtPictureType} onValueChange={(val) => onChangePictureType(val as PictureTypeEnum)} name="picture_type">
                       <SelectTrigger id="picture_type" className="w-full">
                         <SelectValue placeholder="Select picture type" />
                       </SelectTrigger>
@@ -626,33 +627,82 @@ export default function Page() {
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {stateFormAddEdit.errors?.picture_type && <ZodErrors err={stateFormAddEdit.errors?.picture_type} />}
                   </div>
                 </div>
                 {
-                  txtPictureType ? (
-                    <div className="col-span-12 sm:col-span-6 grid gap-2">
-                      <Label className="gap-0" htmlFor="picture">Picture<span className="text-red-500">*</span></Label>
-                      <div className={txtPictureType === PictureTypeEnum.FILE ? "" : "hidden"}>
-                        <Input onChange={handleFileChange} type="file" id="picture" name="picture" />
+                  txtPictureType && (
+                    <div className="col-span-12 mb-1">
+                      <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${txtPictureType === PictureTypeEnum.FILE ? "" : "hidden"}`}>
+                        <div className="flex justify-center items-center">
+                          {!filePictureProduct ? (
+                            <Label htmlFor="picture_file" className="gap-1 w-full h-32 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center text-gray-500 hover:border-gray-600 hover:text-gray-700 transition">
+                              <i className="bx bx-image-add text-2xl"></i>
+                              <div>
+                                Choose Image<span className="text-red-500">*</span>
+                              </div>
+                              <p className="font-normal italic">Click here to select file</p>
+                              {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
+                            </Label>
+                          ) : (
+                            urlPictureProductPrev ? (
+                              <div className="relative w-full h-32">
+                                <img
+                                  src={urlPictureProductPrev}
+                                  alt="Selected"
+                                  className="w-full h-32 object-cover rounded-lg border-2 border-dashed border-gray-600"
+                                />
+                                <Button
+                                  type="button"
+                                  variant={"destructive"}
+                                  className="cursor-pointer absolute top-2 right-2 rounded-full px-1 h-6"
+                                  onClick={handleRemoveImageProduct}
+                                >
+                                  <i className="bx bx-x"></i>
+                                </Button>
+                              </div>
+                            ) : <Label htmlFor="picture_file" className="gap-1 w-full h-32 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center text-gray-500 hover:border-gray-600 hover:text-gray-700 transition">
+                              <i className="bx bx-image-add text-2xl"></i>
+                              <div>
+                                Choose Image<span className="text-red-500">*</span>
+                              </div>
+                              <p className="font-normal italic">Click here to select file</p>
+                              {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
+                            </Label>
+                          )}
+                          <div>
+                            <Input onChange={handleFileChange} type="file" id="picture_file" name="picture_file" className="hidden" />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-start items-start md:justify-center md:items-start">
+                          <div className="font-semibold text-gray-800">Upload File - Terms & Conditions:</div>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 md:w-96">
+                            <li>Allowed formats: JPG, PNG, JPEG.</li>
+                            <li>Maximum file size: 5MB.</li>
+                            <li>Ensure the image is clear and not blurry.</li>
+                            <li>Image should match the product category.</li>
+                            <li>Please ensure the image is not watermarked.</li>
+                          </ul>
+                        </div>
                       </div>
 
-                      <div className={txtPictureType === PictureTypeEnum.URL ? "" : "hidden"}>
-                        <Input
-                          value={urlPictureProduct ?? ""}
-                          onChange={(e) => setUrlPictureProduct(e.target.value)}
-                          type="text"
-                          id="picture"
-                          name="picture"
-                          placeholder="Enter picture url product"
-                        />
+                      <div className={`grid gap-2 ${txtPictureType === PictureTypeEnum.URL ? "" : "hidden"}`}>
+                        <Label className="gap-0" htmlFor="picture_url">Picture URL<span className="text-red-500">*</span></Label>
+                        <div>
+                          <Input
+                            value={urlPictureProduct ?? ""}
+                            onChange={(e) => setUrlPictureProduct(e.target.value)}
+                            type="text"
+                            id="picture_url"
+                            name="picture_url"
+                            placeholder="Enter picture url product"
+                          />
+                          {stateFormAddEdit.errors?.picture_url && <ZodErrors err={stateFormAddEdit.errors?.picture_url} />}
+                        </div>
                       </div>
                     </div>
-                  ) : <div className="col-span-12 sm:col-span-6 grid gap-2">
-                    <Label className="gap-0" htmlFor="picture">Picture<span className="text-red-500">*</span></Label>
-                    <div>
-                      <Input disabled type="text" id="picture" name="picture" placeholder="Please select picture type" />
-                    </div>
-                  </div>
+                  )
                 }
                 <div className="col-span-12 grid gap-2">
                   <Label className="gap-0" htmlFor="store_desc">Short Description</Label>
@@ -660,7 +710,7 @@ export default function Page() {
                     <Input value={txtShortDesc} onChange={(e) => setTxtShortDesc(e.target.value)} type="text" id="store_desc" name="store_desc" placeholder="Enter description if any" />
                   </div>
                 </div>
-                <div className="col-span-12 grid gap-2 mb-1">
+                <div className="col-span-12 grid gap-2">
                   <Label className="gap-0">Description</Label>
                   <Tiptap content={txtDesc} setContent={setTxtDesc} placeholder="Enter product description if any" className="min-h-24" />
                 </div>
@@ -671,81 +721,14 @@ export default function Page() {
                     <Label className="gap-0">Product Variant</Label>
                     <p className="text-muted-foreground text-sm">Here you can enter variants after completing the product submission (Minimum 1)</p>
                   </div>
-                  <div className="grid gap-2">
-                    <TableTopToolbar
-                      inputSearch={inputSearchVariant}
-                      thColomn={tblThColomnsVariant}
-                      setTblThColomns={setTblThColomnsVariant}
-                      setInputSearch={setInputSearchVariant}
-                      fatchData={() => fatchDatasVariant(pageTableVariant)}
-
-                      openModal={addEditId != null ? () => openModalAddEditVariant() : undefined}
-                    />
-
-                    <div className="overflow-hidden rounded-lg border">
-                      <Table>
-                        <TableHeader className="bg-muted sticky top-0 z-10">
-                          <TableRow>
-                            <TableHead>#</TableHead>
-                            {
-                              tblThColomnsVariant.map((x, i) => {
-                                if (x.IsVisible) return <TableHead key={x.key}>{x.name}</TableHead>
-                              })
-                            }
-                            <TableHead className="text-right">Action</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {
-                            datasVariant != null && datasVariant?.length > 0 ? datasVariant.map((data, i) => (
-                              <TableRow key={data.id}>
-                                <TableCell>{(pageTable - 1) * perPage + i + 1}</TableCell>
-                                {
-                                  'sku' in data && <TableCell>
-                                    <Badge className="primary">
-                                      <div className="truncate max-w-[150px]">
-                                        {data.sku}
-                                      </div>
-                                    </Badge>
-                                  </TableCell>
-                                }
-                                {'name' in data && <TableCell className="truncate max-w-[160px]">{data.name}</TableCell>}
-                                {'barcode' in data && <TableCell>{data.barcode}</TableCell>}
-                                {'price' in data && <TableCell>{data.price.toString()}</TableCell>}
-                                {'stock_qty' in data && <TableCell>{data.stock_qty}</TableCell>}
-                                {'is_active' in data && (
-                                  <TableCell>
-                                    <div className={`${data.is_active === true ? "text-green-600" : "text-red-600"} font-semibold`}>
-                                      {data.is_active === true ? "Active" : "Inactive"}
-                                    </div>
-                                  </TableCell>
-                                )}
-
-                                <TableCell className="text-right space-x-1">
-                                  <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                                  <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
-                                </TableCell>
-                              </TableRow>
-                            )) : <TableRow>
-                              <TableCell className="text-center" colSpan={tblThColomnsVariant.length + 3}><i>No data found!</i></TableCell>
-                            </TableRow>
-                          }
-                        </TableBody>
-                      </Table>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div onClick={() => openModalAddEditVariant()} className="gap-0 w-full h-32 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center text-gray-500 hover:border-gray-600 hover:text-gray-700 transition">
+                      <i className="bx bx-basket text-2xl"></i>
+                      <div>
+                        Add Variant
+                      </div>
+                      <p className="font-normal italic">Click to add new variant</p>
                     </div>
-
-                    <TablePagination
-                      perPage={perPageVariant}
-                      pageTable={pageTableVariant}
-                      totalPage={totalPageVariant}
-                      totalCount={totalCountVariant}
-                      setPerPage={setPerPageVariant}
-                      setPageTable={setPageTableVariant}
-                      fatchData={fatchDatasVariant}
-
-                      inputPage={inputPageVariant}
-                      setInputPage={setInputPageVariant}
-                    />
                   </div>
                 </div>
               </div>
@@ -753,8 +736,7 @@ export default function Page() {
 
             <DialogFooter className="p-4 pt-0 mt-3">
               <Button type="submit" className="primary" size={'sm'} formNoValidate>Submit</Button>
-              <Button type="submit" variant={"outline"} size={'sm'} formNoValidate>Submit & Close</Button>
-              <Button type="button" onClick={() => closeModalAddEdit()} variant={"ghost"} size={'sm'}>Cancel</Button>
+              <Button type="button" onClick={() => closeModalAddEdit()} variant={"outline"} size={'sm'}>Cancel</Button>
             </DialogFooter>
           </form>
         </DialogContent>
