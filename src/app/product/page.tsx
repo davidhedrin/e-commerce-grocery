@@ -26,7 +26,8 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DtoProduct } from "@/lib/dto";
+import { DtoProduct, DtoProductVariant } from "@/lib/dto";
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Page() {
   const { setLoading } = useLoading();
@@ -136,7 +137,6 @@ export default function Page() {
 
   const [addEditId, setAddEditId] = useState<number | null>(null);
   const [isActive, setIsActive] = useState<string>();
-  const [txtSlug, setTxtSlug] = useState("");
   const [txtName, setTxtName] = useState("");
   const [txtShortDesc, setTxtShortDesc] = useState("");
   const [txtDesc, setTxtDesc] = useState<string | undefined>();
@@ -147,6 +147,7 @@ export default function Page() {
   const [filePictureProduct, setFilePictureProduct] = useState<File>();
   const [urlPictureProduct, setUrlPictureProduct] = useState("");
   const [urlPictureProductPrev, setUrlPictureProductPrev] = useState<string>();
+  const [listVariant, setListVariant] = useState<DtoProductVariant[]>([]);
   const onChangePictureType = (type: PictureTypeEnum) => {
     setFilePictureProduct(undefined);
     setUrlPictureProduct("");
@@ -156,6 +157,25 @@ export default function Page() {
     if (e.target.files) {
       const file = e.target.files[0];
       if (!file) return;
+
+      const allowedTypes = ["image/jpg", "image/jpeg", "image/png"];
+      const maxSizeInMB = Configs.maxSizePictureInMB;
+      const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.warning("Invalid File Type!", {
+          description: "Only JPG, JPEG, or PNG files are allowed.",
+        });
+        e.target.value = "";
+        return;
+      };
+      if (file.size > maxSizeInBytes) {
+        toast.warning("File Too Large!", {
+          description: `The file size must be less than ${maxSizeInMB}MB.`,
+        });
+        e.target.value = "";
+        return;
+      };
 
       const objectUrl = URL.createObjectURL(file);
       setUrlPictureProductPrev(objectUrl);
@@ -174,16 +194,17 @@ export default function Page() {
     name: z.string().min(1, { message: 'Name is required field.' }).trim(),
     slug: z.string().min(1, { message: 'Slug is required field.' }).trim(),
     category: z.string().min(1, { message: 'Category is required field.' }).trim(),
-    picture_type: z.string().min(1, { message: 'Picture type is required field.' }).trim()
+    picture_type: z.string().min(1, { message: 'Picture type is required field.' }).trim(),
+    list_variant: z.array(z.string()).min(1, { message: 'At least one product variant is required.' })
   });
   const closeModalAddEdit = () => {
     setStateFormAddEdit({ success: true, errors: {} });
     setOpenModal(false);
+    setOpenModalVariant(false);
   };
   const createDtoData = (): DtoProduct => {
     const newData: DtoProduct = {
       id: addEditId,
-      slug: txtSlug,
       name: txtName,
       desc: txtDesc,
       short_desc: txtShortDesc.trim() != "" ? txtShortDesc : null,
@@ -204,7 +225,6 @@ export default function Page() {
       if (data) {
         setAddEditId(data.id);
         setIsActive(data.is_active != null ? data.is_active.toString() : undefined);
-        setTxtSlug(data.slug);
         setTxtName(data.name);
         setTxtShortDesc(data.short_desc || "");
         setTxtDesc(data.desc || undefined);
@@ -219,27 +239,27 @@ export default function Page() {
     } else {
       setAddEditId(null);
       setIsActive(undefined);
-      setTxtSlug("");
       setTxtName("");
       setTxtShortDesc("");
       setTxtDesc(undefined);
       setValueSelectCategory("");
       setValueSelectUom("");
       setTxtBrand("");
-      setTxtPictureType(undefined);
+      setTxtPictureType(PictureTypeEnum.FILE);
       setFilePictureProduct(undefined);
       setUrlPictureProduct("");
+      setListVariant([]);
     }
     setOpenModal(true);
   };
   const handleFormSubmitAddEdit = async (formData: FormData) => {
-    formData.append("slug", txtSlug);
     formData.append("category", valueSelectCategory);
     formData.append("picture_file", filePictureProduct?.name || "");
     formData.append("picture_url", urlPictureProduct);
+    formData.append("list_variant", JSON.stringify(listVariant.map(x => x.name)));
 
     let formSchame = FormSchemaAddEdit;
-    if (txtPictureType === PictureTypeEnum.FILE) { // File name in input gone
+    if (txtPictureType === PictureTypeEnum.FILE) {
       const newFormSchame = FormSchemaAddEdit.extend({
         picture_file: z.string().min(1, { message: 'Picture file is required field.' }).trim()
       });
@@ -252,6 +272,7 @@ export default function Page() {
     };
 
     const data = Object.fromEntries(formData);
+    if (data.list_variant) data.list_variant = JSON.parse(data.list_variant as string);
     const valResult = formSchame.safeParse(data);
     if (!valResult.success) {
       setStateFormAddEdit({
@@ -362,6 +383,71 @@ export default function Page() {
 
   // Product variant
   const [openModalVariant, setOpenModalVariant] = useState(false);
+  const [stateFormAddEditVar, setStateFormAddEditVar] = useState<FormState>({ success: false, errors: {} });
+  const [isActiveVar, setIsActiveVar] = useState<string>();
+  const [txtNameVar, setTxtNameVar] = useState("");
+  const [txtSkuVar, setTxtSkuVar] = useState("");
+  const [txtBarcodeVar, setTxtBarcodeVar] = useState("");
+  const [txtPriceVar, setTxtPriceVar] = useState("");
+  const [txtDiscPriceVar, setTxtDiscPriceVar] = useState("");
+  const [txtPictureTypeVar, setTxtPictureTypeVar] = useState<PictureTypeEnum | undefined>();
+  const [filePictureProductVar, setFilePictureProductVar] = useState<File>();
+  const [urlPictureProductVar, setUrlPictureProductVar] = useState("");
+  const [urlPictureProductVarPrev, setUrlPictureProductVarPrev] = useState<string>();
+  const [txtDescVar, setTxtDescVar] = useState("");
+  const onChangePictureTypeVar = (type: PictureTypeEnum) => {
+    setFilePictureProductVar(undefined);
+    setUrlPictureProductVar("");
+    setTxtPictureTypeVar(type);
+  };
+  const handleFileChangeVar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const allowedTypes = ["image/jpg", "image/jpeg", "image/png"];
+      const maxSizeInMB = Configs.maxSizePictureInMB;
+      const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.warning("Invalid File Type!", {
+          description: "Only JPG, JPEG, or PNG files are allowed.",
+        });
+        e.target.value = "";
+        return;
+      };
+      if (file.size > maxSizeInBytes) {
+        toast.warning("File Too Large!", {
+          description: `The file size must be less than ${maxSizeInMB}MB.`,
+        });
+        e.target.value = "";
+        return;
+      };
+
+      const objectUrl = URL.createObjectURL(file);
+      setUrlPictureProductVarPrev(objectUrl);
+      setFilePictureProductVar(file);
+    } else {
+      setUrlPictureProductVarPrev(undefined);
+      setFilePictureProductVar(undefined);
+    }
+  };
+  const createDtoDataVar = (): DtoProductVariant => {
+    const newData: DtoProductVariant = {
+      id: addEditId,
+      sku: txtSkuVar,
+      barcode: txtBarcodeVar,
+      name: txtNameVar,
+      price: txtPriceVar,
+      disc_price: txtDiscPriceVar,
+      desc: txtDescVar,
+      img_type: txtPictureTypeVar as PictureTypeEnum,
+      img_url: urlPictureProductVar.trim() != "" ? urlPictureProductVar : null,
+      file_img: filePictureProductVar,
+      is_active: isActiveVar === "true" ? true : false,
+    };
+    return newData;
+  };
   const openModalAddEditVariant = async (id?: number) => {
     // if (id) {
     //   const openSonner = SonnerPromise("Loading open form...");
@@ -377,6 +463,35 @@ export default function Page() {
     // }
     setOpenModalVariant(true);
   };
+  const closeModalAddEditVariant = () => {
+    setStateFormAddEditVar({ success: true, errors: {} });
+    setOpenModalVariant(false);
+  };
+  const handleRemoveImageProductVar = () => {
+    setUrlPictureProductVarPrev(undefined);
+    setFilePictureProductVar(undefined);
+  };
+  const FormSchemaAddEditVar = z.object({
+    var_is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
+    var_name: z.string().min(1, { message: 'Name is required field.' }).trim(),
+    var_sku: z.string().min(1, { message: 'SKU is required field.' }).trim(),
+    var_price: z.string().min(1, { message: 'Price is required field.' }).trim()
+  });
+  const handleFormSubmitAddEditVariant = (formData: FormData) => {
+    const data = Object.fromEntries(formData);
+    const valResult = FormSchemaAddEditVar.safeParse(data);
+    if (!valResult.success) {
+      setStateFormAddEditVar({
+        success: false,
+        errors: valResult.error.flatten().fieldErrors,
+      });
+      return;
+    };
+    setStateFormAddEditVar({ success: true, errors: {} });
+
+    const dataVar: DtoProductVariant = createDtoDataVar();
+    setListVariant(prev => [...prev, dataVar]);
+  }
   // End product variant
 
   return (
@@ -478,13 +593,6 @@ export default function Page() {
           <form action={(formData) => handleFormSubmitAddEdit(formData)}>
             <ScrollArea type="always" className="h-[480px]">
               <div className='grid grid-cols-12 gap-3 mb-0 p-4 pt-0'>
-                <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-                  <Label className="gap-0" htmlFor="slug">Code<span className="text-red-500">*</span></Label>
-                  <div>
-                    <Input disabled={addEditId != null} value={txtSlug} onChange={(e) => setTxtSlug(e.target.value)} type="text" id="slug" name="slug" placeholder="Enter product code" />
-                    {stateFormAddEdit.errors?.slug && <ZodErrors err={stateFormAddEdit.errors?.slug} />}
-                  </div>
-                </div>
                 <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
                   <Label className="gap-0" htmlFor="name">Name<span className="text-red-500">*</span></Label>
                   <div>
@@ -610,7 +718,7 @@ export default function Page() {
                     </Popover>
                   </div>
                 </div>
-                <div className="col-span-12 grid gap-2">
+                <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
                   <Label className="gap-0" htmlFor="picture_type">Picture Type<span className="text-red-500">*</span></Label>
                   <div>
                     <Select defaultValue={txtPictureType} onValueChange={(val) => onChangePictureType(val as PictureTypeEnum)} name="picture_type">
@@ -636,7 +744,7 @@ export default function Page() {
                       <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${txtPictureType === PictureTypeEnum.FILE ? "" : "hidden"}`}>
                         <div className="flex justify-center items-center">
                           {!filePictureProduct ? (
-                            <Label htmlFor="picture_file" className="gap-1 w-full h-32 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center text-gray-500 hover:border-gray-600 hover:text-gray-700 transition">
+                            <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
                               <i className="bx bx-image-add text-2xl"></i>
                               <div>
                                 Choose Image<span className="text-red-500">*</span>
@@ -646,11 +754,11 @@ export default function Page() {
                             </Label>
                           ) : (
                             urlPictureProductPrev ? (
-                              <div className="relative w-full h-32">
+                              <div className="relative w-full h-28">
                                 <img
                                   src={urlPictureProductPrev}
                                   alt="Selected"
-                                  className="w-full h-32 object-cover rounded-lg border-2 border-dashed border-gray-600"
+                                  className="w-full h-28 object-cover rounded-lg border-2 border-dashed border-gray-600"
                                 />
                                 <Button
                                   type="button"
@@ -661,7 +769,7 @@ export default function Page() {
                                   <i className="bx bx-x"></i>
                                 </Button>
                               </div>
-                            ) : <Label htmlFor="picture_file" className="gap-1 w-full h-32 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center text-gray-500 hover:border-gray-600 hover:text-gray-700 transition">
+                            ) : <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
                               <i className="bx bx-image-add text-2xl"></i>
                               <div>
                                 Choose Image<span className="text-red-500">*</span>
@@ -676,13 +784,12 @@ export default function Page() {
                         </div>
 
                         <div className="flex flex-col justify-start items-start md:justify-center md:items-start">
-                          <div className="font-semibold text-gray-800">Upload File - Terms & Conditions:</div>
-                          <ul className="list-disc pl-5 text-sm text-gray-600 md:w-96">
-                            <li>Allowed formats: JPG, PNG, JPEG.</li>
-                            <li>Maximum file size: 5MB.</li>
-                            <li>Ensure the image is clear and not blurry.</li>
-                            <li>Image should match the product category.</li>
-                            <li>Please ensure the image is not watermarked.</li>
+                          <div className="font-semibold">Upload File - Terms & Conditions:</div>
+                          <ul className="list-disc pl-5 text-sm w-auto">
+                            <li>Allowed formats<span className="text-red-500">*</span>: JPG, JPEG, PNG.</li>
+                            <li>Maximum file size<span className="text-red-500">*</span>: {Configs.maxSizePictureInMB}MB.</li>
+                            <li>Image is clear and not blurry.</li>
+                            <li>Ensure product image is not watermarked.</li>
                           </ul>
                         </div>
                       </div>
@@ -705,9 +812,9 @@ export default function Page() {
                   )
                 }
                 <div className="col-span-12 grid gap-2">
-                  <Label className="gap-0" htmlFor="store_desc">Short Description</Label>
+                  <Label className="gap-0" htmlFor="description">Short Description</Label>
                   <div>
-                    <Input value={txtShortDesc} onChange={(e) => setTxtShortDesc(e.target.value)} type="text" id="store_desc" name="store_desc" placeholder="Enter description if any" />
+                    <Input value={txtShortDesc} onChange={(e) => setTxtShortDesc(e.target.value)} type="text" id="description" name="description" placeholder="Enter description if any" />
                   </div>
                 </div>
                 <div className="col-span-12 grid gap-2">
@@ -718,15 +825,52 @@ export default function Page() {
                 <div className="col-span-12 grid gap-2">
                   <hr />
                   <div>
-                    <Label className="gap-0">Product Variant</Label>
-                    <p className="text-muted-foreground text-sm">Here you can enter variants after completing the product submission (Minimum 1)</p>
+                    <Label className="gap-0">Product Variant (Min 1<span className="text-red-500">*</span>)</Label>
+                    <p className="text-muted-foreground text-sm mb-0">Here you can enter the variant of product, And manage stock items from the Inventory menu.</p>
+                    {stateFormAddEdit.errors?.list_variant && <ZodErrors err={stateFormAddEdit.errors?.list_variant} />}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div onClick={() => openModalAddEditVariant()} className="gap-0 w-full h-32 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center text-gray-500 hover:border-gray-600 hover:text-gray-700 transition">
-                      <i className="bx bx-basket text-2xl"></i>
-                      <div>
-                        Add Variant
-                      </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
+                    {
+                      listVariant.map((x, i) => (
+                        <Card key={i} className="p-3 relative flex flex-col justify-between gap-0">
+                          <CardHeader className="p-0 gap-1">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <CardTitle className="text-lg font-normal">{x.name}</CardTitle>
+                                <CardDescription>SKU: {x.sku}</CardDescription>
+                              </div>
+                              <CardAction>
+                                <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
+                                <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                              </CardAction>
+                            </div>
+                          </CardHeader>
+
+                          <CardFooter className="relative flex flex-col items-start text-sm p-0">
+                            <div className="font-medium">Price: Rp {x.price}</div>
+                            <div className="text-muted-foreground">Discount: Rp {x.disc_price || "-"}</div>
+
+                            {x.file_img && (
+                              <div className="absolute bottom-0 right-0 w-20 h-full rounded-md overflow-hidden border">
+                                <img
+                                  src={URL.createObjectURL(x.file_img)}
+                                  alt={x.name || "Variant"}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                            )}
+                          </CardFooter>
+                        </Card>
+                      ))
+                    }
+
+                    <div
+                      onClick={() => openModalAddEditVariant()}
+                      className="gap-1 w-full h-full min-h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center"
+                    >
+                      <i className="bx bx-layer-plus text-2xl"></i>
+                      <div>Add Variant</div>
                       <p className="font-normal italic">Click to add new variant</p>
                     </div>
                   </div>
@@ -744,17 +888,164 @@ export default function Page() {
 
 
       <Dialog open={openModalVariant} onOpenChange={setOpenModalVariant} modal={false}>
-        <DialogContent className="p-4 text-sm sm:max-w-lg" setOpenModal={() => setOpenModalVariant(false)} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent className="p-4 text-sm sm:max-w-lg" setOpenModal={() => closeModalAddEditVariant()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader className="justify-center gap-y-0">
-            <DialogTitle className="text-base"><i className='bx bx-basket text-lg'></i> {addEditId ? "Edit" : "Add"} Product Variant</DialogTitle>
+            <DialogTitle className="text-base"><i className='bx bx-layer-plus text-lg'></i> {addEditId ? "Edit" : "Add"} Product Variant</DialogTitle>
             <DialogDescription>Here form to handle product variant data</DialogDescription>
           </DialogHeader>
-          <form>
+          <form action={(formData) => handleFormSubmitAddEditVariant(formData)}>
+            <div className='grid grid-cols-12 gap-3 mb-0 py-4 pt-0'>
+              <div className="col-span-12 md:col-span-6 grid gap-2">
+                <Label className="gap-0" htmlFor="var_name">Name<span className="text-red-500">*</span></Label>
+                <div>
+                  <Input value={txtNameVar} onChange={(e) => setTxtNameVar(e.target.value)} type="text" id="var_name" name="var_name" placeholder="Enter variant name" />
+                  {stateFormAddEditVar.errors?.var_name && <ZodErrors err={stateFormAddEditVar.errors?.var_name} />}
+                </div>
+              </div>
+              <div className="col-span-12 md:col-span-6 grid gap-2">
+                <Label className="gap-0" htmlFor="var_is_active">Status<span className="text-red-500">*</span></Label>
+                <div>
+                  <Select value={isActiveVar} onValueChange={(val) => setIsActiveVar(val)} name="var_is_active">
+                    <SelectTrigger id="var_is_active" className="w-full">
+                      <SelectValue placeholder="Select status variant" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="true">Active</SelectItem>
+                        <SelectItem value="false">Inactive</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {stateFormAddEditVar.errors?.var_is_active && <ZodErrors err={stateFormAddEditVar.errors?.var_is_active} />}
+                </div>
+              </div>
+              <div className="col-span-12 md:col-span-6 grid gap-2">
+                <Label className="gap-0" htmlFor="var_sku">SKU<span className="text-red-500">*</span></Label>
+                <div>
+                  <Input value={txtSkuVar} onChange={(e) => setTxtSkuVar(e.target.value)} type="text" id="var_sku" name="var_sku" placeholder="Enter variant sku" />
+                  {stateFormAddEditVar.errors?.var_sku && <ZodErrors err={stateFormAddEditVar.errors?.var_sku} />}
+                </div>
+              </div>
+              <div className="col-span-12 md:col-span-6 grid gap-2">
+                <Label className="gap-0" htmlFor="var_price">Price<span className="text-red-500">*</span></Label>
+                <div>
+                  <Input value={txtPriceVar} onChange={(e) => setTxtPriceVar(e.target.value)} type="text" id="var_price" name="var_price" placeholder="Enter variant price (IDR)" />
+                  {stateFormAddEditVar.errors?.var_price && <ZodErrors err={stateFormAddEditVar.errors?.var_price} />}
+                </div>
+              </div>
+              <div className="col-span-12 md:col-span-6 grid gap-2">
+                <Label className="gap-0" htmlFor="var_barcode">Barcode</Label>
+                <div>
+                  <Input value={txtBarcodeVar} onChange={(e) => setTxtBarcodeVar(e.target.value)} type="text" id="var_barcode" name="var_barcode" placeholder="Enter variant barcode" />
+                </div>
+              </div>
+              <div className="col-span-12 md:col-span-6 grid gap-2">
+                <Label className="gap-0" htmlFor="var_disc_price">Discount Price</Label>
+                <div>
+                  <Input value={txtDiscPriceVar} onChange={(e) => setTxtDiscPriceVar(e.target.value)} type="text" id="var_disc_price" name="var_disc_price" placeholder="Enter variant discount (IDR)" />
+                </div>
+              </div>
+              <div className="col-span-12 grid gap-2">
+                <Label className="gap-0" htmlFor="var_picture_type">Picture Type</Label>
+                <div>
+                  <Select defaultValue={txtPictureTypeVar} onValueChange={(val) => onChangePictureTypeVar(val as PictureTypeEnum)} name="var_picture_type">
+                    <SelectTrigger id="var_picture_type" className="w-full">
+                      <SelectValue placeholder="Select variant picture type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {
+                          Object.values(PictureTypeEnum).map((x, i) => (
+                            <SelectItem key={i} value={x}>{pictureTypeLabels[x]}</SelectItem>
+                          ))
+                        }
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {
+                txtPictureTypeVar && (
+                  <div className="col-span-12 mb-1">
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${txtPictureTypeVar === PictureTypeEnum.FILE ? "" : "hidden"}`}>
+                      <div className="flex justify-center items-center">
+                        {!filePictureProductVar ? (
+                          <Label htmlFor="var_picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
+                            <i className="bx bx-image-add text-2xl"></i>
+                            <div>
+                              Choose Image
+                            </div>
+                            <p className="font-normal italic">Click here to select file</p>
+                          </Label>
+                        ) : (
+                          urlPictureProductVarPrev ? (
+                            <div className="relative w-full h-28">
+                              <img
+                                src={urlPictureProductVarPrev}
+                                alt="Selected"
+                                className="w-full h-28 object-cover rounded-lg border-2 border-dashed border-gray-600"
+                              />
+                              <Button
+                                type="button"
+                                variant={"destructive"}
+                                className="cursor-pointer absolute top-2 right-2 rounded-full px-1 h-6"
+                                onClick={handleRemoveImageProductVar}
+                              >
+                                <i className="bx bx-x"></i>
+                              </Button>
+                            </div>
+                          ) : <Label htmlFor="var_picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
+                            <i className="bx bx-image-add text-2xl"></i>
+                            <div>
+                              Choose Image
+                            </div>
+                            <p className="font-normal italic">Click here to select file</p>
+                          </Label>
+                        )}
+                        <div>
+                          <Input onChange={handleFileChangeVar} type="file" id="var_picture_file" name="var_picture_file" className="hidden" />
+                        </div>
+                      </div>
 
+                      <div className="flex flex-col justify-start items-start md:justify-center md:items-start">
+                        <div className="font-semibold">Upload File - Terms & Conditions:</div>
+                        <ul className="list-disc pl-5 text-sm w-auto">
+                          <li>Allowed formats<span className="text-red-500">*</span>: JPG, JPEG, PNG.</li>
+                          <li>Maximum file size<span className="text-red-500">*</span>: {Configs.maxSizePictureInMB}MB.</li>
+                          <li>Image is clear and not blurry.</li>
+                          <li>Image is not watermarked.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className={`grid gap-2 ${txtPictureTypeVar === PictureTypeEnum.URL ? "" : "hidden"}`}>
+                      <Label className="gap-0" htmlFor="var_picture_url">Picture URL</Label>
+                      <div>
+                        <Input
+                          value={urlPictureProductVar ?? ""}
+                          onChange={(e) => setUrlPictureProductVar(e.target.value)}
+                          type="text"
+                          id="var_picture_url"
+                          name="var_picture_url"
+                          placeholder="Enter picture url product"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              <div className="col-span-12 grid gap-2">
+                <Label className="gap-0" htmlFor="var_desc">Description</Label>
+                <div>
+                  <Input value={txtDescVar} onChange={(e) => setTxtDescVar(e.target.value)} type="text" id="var_desc" name="var_desc" placeholder="Enter description if any" />
+                </div>
+              </div>
+            </div>
 
             <DialogFooter>
-              <Button type="submit" className="primary" size={'sm'}>Submit</Button>
-              <Button type="button" onClick={() => setOpenModalVariant(false)} variant={'outline'} size={'sm'}>Cancel</Button>
+              <Button type="submit" className="primary" size={'sm'}>Save</Button>
+              <Button type="submit" variant={"outline"} size={'sm'}>Save & Close</Button>
+              <Button type="button" onClick={() => closeModalAddEditVariant()} variant={'ghost'} size={'sm'}>Cancel</Button>
             </DialogFooter>
           </form>
         </DialogContent>

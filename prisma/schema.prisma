@@ -120,6 +120,7 @@ model ProductVariant {
   price      Decimal          @db.Decimal(9, 2)
   disc_price Decimal?         @db.Decimal(9, 2)
   stock_qty  Int
+  desc       String?
   img_type   PictureTypeEnum?
   img        String?
   is_active  Boolean?         @default(true)

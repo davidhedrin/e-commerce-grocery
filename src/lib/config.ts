@@ -39,6 +39,8 @@ const Configs = {
     { key: "sachet", name: "Sachet" },
     { key: "strip", name: "Strip" },
     { key: "tablet", name: "Tablet" },
-  ]
+  ],
+
+  maxSizePictureInMB: 2
 };
 export default Configs;

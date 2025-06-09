@@ -10,7 +10,6 @@ export type DtoProductCategory = {
 
 export type DtoProduct = {
   id?: number | null;
-  slug?: string | null;
   name: string;
   desc?: string | null;
   short_desc?: string | null;
@@ -31,7 +30,7 @@ export type DtoProductVariant = {
   name: string | null;
   price?: string | null;
   disc_price?: string | null;
-  stock_qty?: string | null;
+  desc?: string | null;
   img_type?: PictureTypeEnum;
   img_url?: string | null;
   file_img?: File | null;
