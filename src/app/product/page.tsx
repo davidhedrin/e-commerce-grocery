@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ZodErrors } from "@/components/zod-errors";
 import Configs from "@/lib/config";
 import { FormState, TableShortList, TableThModel } from "@/lib/models-type";
-import { formatDate, normalizeSelectObj, pictureTypeLabels, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
+import { formatDate, normalizeSelectObj, pictureTypeLabels, removeListStateByIndex, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
 import { GetDataProduct, GetDataProductById, GetDataProductCategory, GetDataProductVariant, StoreUpdateDataProduct } from "@/server/product";
 import { PictureTypeEnum, Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { Check, ChevronDown } from "lucide-react";
@@ -384,6 +384,7 @@ export default function Page() {
   // Product variant
   const [openModalVariant, setOpenModalVariant] = useState(false);
   const [stateFormAddEditVar, setStateFormAddEditVar] = useState<FormState>({ success: false, errors: {} });
+  const [addEditIdVar, setAddEditIdVar] = useState<number | null>(null);
   const [isActiveVar, setIsActiveVar] = useState<string>();
   const [txtNameVar, setTxtNameVar] = useState("");
   const [txtSkuVar, setTxtSkuVar] = useState("");
@@ -434,7 +435,7 @@ export default function Page() {
   };
   const createDtoDataVar = (): DtoProductVariant => {
     const newData: DtoProductVariant = {
-      id: addEditId,
+      id: addEditIdVar,
       sku: txtSkuVar,
       barcode: txtBarcodeVar,
       name: txtNameVar,
@@ -446,21 +447,46 @@ export default function Page() {
       file_img: filePictureProductVar,
       is_active: isActiveVar === "true" ? true : false,
     };
+
+    if(txtPictureTypeVar === PictureTypeEnum.FILE && filePictureProductVar != undefined) newData.img_url = URL.createObjectURL(filePictureProductVar);
     return newData;
   };
-  const openModalAddEditVariant = async (id?: number) => {
-    // if (id) {
-    //   const openSonner = SonnerPromise("Loading open form...");
-    //   const data = await GetDataProductCategoryById(id);
-    //   if (data) {
-    //     setAddEditId(data.id);
-    //     setIsActive(data.is_active != null ? data.is_active.toString() : undefined);
-    //   }
-    //   toast.dismiss(openSonner);
-    // } else {
-    //   setAddEditId(null);
-    //   setIsActive(undefined);
-    // }
+  const openModalAddEditVariant = async (v?: DtoProductVariant) => {
+    if (v) {
+      setAddEditIdVar(v.id || null);
+      setIsActiveVar(v.is_active != null ? v.is_active.toString() : undefined);
+      setTxtNameVar(v.name || "");
+      setTxtSkuVar(v.sku || "");
+      setTxtBarcodeVar(v.barcode || "");
+      setTxtPriceVar(v.price || "");
+      setTxtDiscPriceVar(v.disc_price || "");
+      setTxtDescVar(v.desc || "");
+      setTxtPictureTypeVar(v.img_type);
+      if (v.img_type !== undefined) {
+        if (v.img_type === PictureTypeEnum.FILE) {
+          setUrlPictureProductVar("");
+          if(v.file_img != null && v.file_img !== undefined) setUrlPictureProductVarPrev(URL.createObjectURL(v.file_img));
+          else setUrlPictureProductVarPrev(undefined);
+        } else if (v.img_type === PictureTypeEnum.URL) {
+          setUrlPictureProductVar(v.img_url || "");
+          setUrlPictureProductVarPrev(undefined);
+          setFilePictureProductVar(undefined);
+        }
+      }
+    } else {
+      setAddEditIdVar(null);
+      setIsActiveVar(undefined);
+      setTxtNameVar("");
+      setTxtSkuVar("");
+      setTxtBarcodeVar("");
+      setTxtPriceVar("");
+      setTxtDiscPriceVar("");
+      setTxtPictureTypeVar(undefined);
+      setFilePictureProductVar(undefined);
+      setUrlPictureProductVar("");
+      setUrlPictureProductVarPrev(undefined);
+      setTxtDescVar("");
+    }
     setOpenModalVariant(true);
   };
   const closeModalAddEditVariant = () => {
@@ -478,6 +504,8 @@ export default function Page() {
     var_price: z.string().min(1, { message: 'Price is required field.' }).trim()
   });
   const handleFormSubmitAddEditVariant = (formData: FormData) => {
+    const submitClose = formData.get("submitClose");
+
     const data = Object.fromEntries(formData);
     const valResult = FormSchemaAddEditVar.safeParse(data);
     if (!valResult.success) {
@@ -491,6 +519,8 @@ export default function Page() {
 
     const dataVar: DtoProductVariant = createDtoDataVar();
     setListVariant(prev => [...prev, dataVar]);
+
+    if (submitClose === "close") closeModalAddEditVariant();
   }
   // End product variant
 
@@ -581,7 +611,6 @@ export default function Page() {
         inputPage={inputPage}
         setInputPage={setInputPage}
       />
-
 
       {/* Modal add & edit */}
       <Dialog open={openModal} onOpenChange={setOpenModal}>
@@ -841,8 +870,8 @@ export default function Page() {
                                 <CardDescription>SKU: {x.sku}</CardDescription>
                               </div>
                               <CardAction>
-                                <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                                <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                                <i onClick={() => openModalAddEditVariant(x)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
+                                <i onClick={() => setListVariant(removeListStateByIndex(listVariant, i))} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
                               </CardAction>
                             </div>
                           </CardHeader>
@@ -851,10 +880,10 @@ export default function Page() {
                             <div className="font-medium">Price: Rp {x.price}</div>
                             <div className="text-muted-foreground">Discount: Rp {x.disc_price || "-"}</div>
 
-                            {x.file_img && (
+                            {x.img_url && (
                               <div className="absolute bottom-0 right-0 w-20 h-full rounded-md overflow-hidden border">
                                 <img
-                                  src={URL.createObjectURL(x.file_img)}
+                                  src={x.img_url}
                                   alt={x.name || "Variant"}
                                   className="object-cover w-full h-full"
                                 />
@@ -885,7 +914,6 @@ export default function Page() {
           </form>
         </DialogContent>
       </Dialog>
-
 
       <Dialog open={openModalVariant} onOpenChange={setOpenModalVariant} modal={false}>
         <DialogContent className="p-4 text-sm sm:max-w-lg" setOpenModal={() => closeModalAddEditVariant()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
@@ -969,15 +997,7 @@ export default function Page() {
                   <div className="col-span-12 mb-1">
                     <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${txtPictureTypeVar === PictureTypeEnum.FILE ? "" : "hidden"}`}>
                       <div className="flex justify-center items-center">
-                        {!filePictureProductVar ? (
-                          <Label htmlFor="var_picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
-                            <i className="bx bx-image-add text-2xl"></i>
-                            <div>
-                              Choose Image
-                            </div>
-                            <p className="font-normal italic">Click here to select file</p>
-                          </Label>
-                        ) : (
+                        {
                           urlPictureProductVarPrev ? (
                             <div className="relative w-full h-28">
                               <img
@@ -1001,7 +1021,7 @@ export default function Page() {
                             </div>
                             <p className="font-normal italic">Click here to select file</p>
                           </Label>
-                        )}
+                        }
                         <div>
                           <Input onChange={handleFileChangeVar} type="file" id="var_picture_file" name="var_picture_file" className="hidden" />
                         </div>
@@ -1044,7 +1064,7 @@ export default function Page() {
 
             <DialogFooter>
               <Button type="submit" className="primary" size={'sm'}>Save</Button>
-              <Button type="submit" variant={"outline"} size={'sm'}>Save & Close</Button>
+              <Button type="submit" variant={"outline"} size={'sm'} name="submitClose" value="close">Save & Close</Button>
               <Button type="button" onClick={() => closeModalAddEditVariant()} variant={'ghost'} size={'sm'}>Cancel</Button>
             </DialogFooter>
           </form>

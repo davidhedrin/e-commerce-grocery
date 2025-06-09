@@ -41,6 +41,9 @@ const Configs = {
     { key: "tablet", name: "Tablet" },
   ],
 
-  maxSizePictureInMB: 2
+  maxSizePictureInMB: 2,
+  nameBtnSubmit: "submitType",
+  nameBtnSaveVal: "save",
+  nameBtnSaveCloseVal: "saveClose",
 };
 export default Configs;
