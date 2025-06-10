@@ -20,14 +20,16 @@ export type DtoProduct = {
   img_url: string | null;
   file_img: File | null;
   is_active: boolean | null;
+
+  variants: DtoProductVariant[],
 };
 
 export type DtoProductVariant = {
   id: number | null;
   product_id: number | null;
-  sku: string | null;
+  sku: string;
   barcode: string | null;
-  name: string | null;
+  name: string;
   price: number;
   disc_price: number | null;
   desc: string | null;

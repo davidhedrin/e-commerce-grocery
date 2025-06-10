@@ -136,34 +136,107 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
     if(formData.img_type === PictureTypeEnum.FILE && imgName != null) formData.img_url = imgName;
 
     const data_id = formData.id ?? 0;
-    await db.product.upsert({
-      where: { id: data_id },
-      update: {
-        name: formData.name,
-        desc: formData.desc,
-        short_desc: formData.short_desc,
-        category_id: formData.category_id,
-        brand: formData.brand,
-        uom: formData.uom,
-        img_type: formData.img_type,
-        img: formData.img_url,
-        is_active: formData.is_active,
-        updatedBy: user?.email
-      },
-      create: {
-        slug: stringWithTimestamp(6),
-        name: formData.name,
-        desc: formData.desc,
-        short_desc: formData.short_desc,
-        category_id: formData.category_id,
-        brand: formData.brand,
-        uom: formData.uom,
-        img_type: formData.img_type,
-        img: formData.img_url,
-        is_active: formData.is_active,
-        createdBy: user?.email
+    const listVariant = formData.variants;
+
+    await db.$transaction(async (tx) => {
+      const productData = await tx.product.upsert({
+        where: { id: data_id },
+        update: {
+          name: formData.name,
+          desc: formData.desc,
+          short_desc: formData.short_desc,
+          category_id: formData.category_id,
+          brand: formData.brand,
+          uom: formData.uom,
+          img_type: formData.img_type,
+          img: formData.img_url,
+          is_active: formData.is_active,
+          updatedBy: user?.email
+        },
+        create: {
+          slug: stringWithTimestamp(6),
+          name: formData.name,
+          desc: formData.desc,
+          short_desc: formData.short_desc,
+          category_id: formData.category_id,
+          brand: formData.brand,
+          uom: formData.uom,
+          img_type: formData.img_type,
+          img: formData.img_url,
+          is_active: formData.is_active,
+          createdBy: user?.email
+        }
+      });
+      
+      if(data_id > 0){
+        const getExistData = await tx.productVariant.findMany({
+          where: {
+            product_id: data_id
+          }
+        });
+        const incomingIds = listVariant.filter(x => x.id).map(x => x.id);
+        const toDelete = getExistData.filter(x => !incomingIds.includes(x.id));
+        const deleteDatas = toDelete.map(item =>
+          tx.productVariant.delete({
+            where: { id: item.id }
+          })
+        );
+
+        const updateOrCreate = listVariant.map(x => {
+          if(x.id && x.id > 0) return tx.productVariant.update({
+            where: { id: x.id },
+            data: {
+              barcode: x.barcode,
+              name: x.name,
+              price: x.price,
+              disc_price: x.disc_price,
+              desc: x.desc,
+              img_type: x.img_type,
+              img: x.img_url,
+              is_active: x.is_active,
+              updatedBy: user?.email
+            }
+          });
+          else return tx.productVariant.create({
+            data: {
+              product_id: productData.id,
+              sku: x.sku,
+              barcode: x.barcode,
+              name: x.name,
+              price: x.price,
+              disc_price: x.disc_price,
+              stock_qty: 0,
+              desc: x.desc,
+              img_type: x.img_type,
+              img: x.img_url,
+              is_active: x.is_active,
+              createdBy: user?.email
+            }
+          });
+        });
+        
+        await Promise.all([...updateOrCreate, ...deleteDatas]);
+      }else{
+        const setListVariant: Prisma.ProductVariantCreateManyInput[] = listVariant.map((x) => ({
+          product_id: productData.id,
+          sku: x.sku,
+          barcode: x.barcode,
+          name: x.name,
+          price: x.price,
+          disc_price: x.disc_price,
+          stock_qty: 0,
+          desc: x.desc,
+          img_type: x.img_type,
+          img: x.img_url,
+          is_active: x.is_active,
+          createdBy: user?.email
+        }));
+
+        await tx.productVariant.createMany({
+          data: setListVariant
+        });
       }
-    });
+    })
   } catch (error: any) {
     throw new Error(error.message);
   }

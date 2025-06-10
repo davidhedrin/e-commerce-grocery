@@ -19,8 +19,8 @@ import { ZodErrors } from "@/components/zod-errors";
 import Configs from "@/lib/config";
 import { FormState, TableShortList, TableThModel } from "@/lib/models-type";
 import { formatDate, formatToIDR, inputFormatPriceIdr, normalizeSelectObj, parseFromIDR, pictureTypeLabels, removeListStateByIndex, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
-import { GetDataProduct, GetDataProductById, GetDataProductCategory, GetDataProductVariant, StoreUpdateDataProduct } from "@/server/product";
-import { PictureTypeEnum, Product, ProductCategory, ProductVariant } from "@prisma/client";
+import { GetDataProduct, GetDataProductById, GetDataProductCategory, StoreUpdateDataProduct } from "@/server/product";
+import { PictureTypeEnum, Product, ProductCategory } from "@prisma/client";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -210,11 +210,13 @@ export default function Page() {
       short_desc: txtShortDesc.trim() != "" ? txtShortDesc : null,
       category_id: parseInt(valueSelectCategory),
       brand: txtBrand.trim() != "" ? txtBrand : null,
-      uom: valueSelectUom,
+      uom: valueSelectUom !== "" ? valueSelectUom : null,
       img_type: txtPictureType as PictureTypeEnum,
       img_url: urlPictureProduct.trim() != "" ? urlPictureProduct : null,
       file_img: filePictureProduct,
       is_active: isActive === "true" ? true : false,
+
+      variants: listVariant
     };
     return newData;
   };
@@ -458,11 +460,11 @@ export default function Page() {
       id: addEditIdVar,
       product_id: addEditId,
       sku: txtSkuVar,
-      barcode: txtBarcodeVar,
+      barcode: txtBarcodeVar.trim() !== "" ? txtBarcodeVar : null,
       name: txtNameVar,
       price: parseFromIDR(txtPriceVar),
       disc_price: parseFromIDR(txtDiscPriceVar),
-      desc: txtDescVar,
+      desc: txtDescVar.trim() !== "" ? txtDescVar : null,
       img_type: txtPictureTypeVar as PictureTypeEnum,
       img_url: urlPictureProductVar.trim() != "" ? urlPictureProductVar : null,
       file_img: filePictureProductVar,
