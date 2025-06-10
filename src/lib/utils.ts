@@ -132,3 +132,17 @@ export function formatDate(dateString: string | Date, dtStyle: "short" | "full" 
     timeStyle: tmStyle,
   }).format(date);
 };
+
+export function inputFormatPriceIdr(value: string){
+  const rawValue = value.replace(/[^0-9]/g, '');
+  if (rawValue === '') return;
+  const formatted = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return formatted;
+}
+export function formatToIDR(value: string | number): string {
+  const numberValue = typeof value === 'string' ? parseInt(value, 10) : value;
+  return numberValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+export function parseFromIDR(formatted: string): number {
+  return parseInt(formatted.replace(/\./g, ''), 10);
+};

@@ -168,10 +168,16 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
     throw new Error(error.message);
   }
 };
-export async function GetDataProductById(id: number): Promise<Product | null> {
+export async function GetDataProductById(id: number): Promise<Product & {
+  variants: ProductVariant[]
+} | null> {
   const getData = await db.product.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      variants: true
+    }
   });
+
   return getData;
 };
 

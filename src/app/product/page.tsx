@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ZodErrors } from "@/components/zod-errors";
 import Configs from "@/lib/config";
 import { FormState, TableShortList, TableThModel } from "@/lib/models-type";
-import { formatDate, normalizeSelectObj, pictureTypeLabels, removeListStateByIndex, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
+import { formatDate, formatToIDR, inputFormatPriceIdr, normalizeSelectObj, parseFromIDR, pictureTypeLabels, removeListStateByIndex, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
 import { GetDataProduct, GetDataProductById, GetDataProductCategory, GetDataProductVariant, StoreUpdateDataProduct } from "@/server/product";
 import { PictureTypeEnum, Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { Check, ChevronDown } from "lucide-react";
@@ -234,6 +234,25 @@ export default function Page() {
         setTxtPictureType(data.img_type || undefined);
         setFilePictureProduct(undefined);
         setUrlPictureProduct(data.img || "");
+
+        const variants = data.variants.map(x => {
+          const dtoData: DtoProductVariant = {
+            id: x.id,
+            product_id: data.id,
+            sku: x.sku,
+            barcode: x.barcode,
+            name: x.name,
+            price: x.price,
+            disc_price: x.disc_price != null ? x.disc_price : null,
+            desc: x.desc,
+            img_type: x.img_type || undefined,
+            img_url: x.img,
+            file_img: undefined,
+            is_active: x.is_active
+          };
+          return dtoData;
+        })
+        setListVariant(variants);
       }
       toast.dismiss(openSonner);
     } else {
@@ -384,6 +403,7 @@ export default function Page() {
   // Product variant
   const [openModalVariant, setOpenModalVariant] = useState(false);
   const [stateFormAddEditVar, setStateFormAddEditVar] = useState<FormState>({ success: false, errors: {} });
+  const [editSelectIndexVar, setEditSelectIndexVar] = useState<number | null>(null);
   const [addEditIdVar, setAddEditIdVar] = useState<number | null>(null);
   const [isActiveVar, setIsActiveVar] = useState<string>();
   const [txtNameVar, setTxtNameVar] = useState("");
@@ -439,8 +459,8 @@ export default function Page() {
       sku: txtSkuVar,
       barcode: txtBarcodeVar,
       name: txtNameVar,
-      price: txtPriceVar,
-      disc_price: txtDiscPriceVar,
+      price: parseFromIDR(txtPriceVar),
+      disc_price: parseFromIDR(txtDiscPriceVar),
       desc: txtDescVar,
       img_type: txtPictureTypeVar as PictureTypeEnum,
       img_url: urlPictureProductVar.trim() != "" ? urlPictureProductVar : null,
@@ -451,29 +471,38 @@ export default function Page() {
     if(txtPictureTypeVar === PictureTypeEnum.FILE && filePictureProductVar != undefined) newData.img_url = URL.createObjectURL(filePictureProductVar);
     return newData;
   };
-  const openModalAddEditVariant = async (v?: DtoProductVariant) => {
-    if (v) {
-      setAddEditIdVar(v.id || null);
-      setIsActiveVar(v.is_active != null ? v.is_active.toString() : undefined);
-      setTxtNameVar(v.name || "");
-      setTxtSkuVar(v.sku || "");
-      setTxtBarcodeVar(v.barcode || "");
-      setTxtPriceVar(v.price || "");
-      setTxtDiscPriceVar(v.disc_price || "");
-      setTxtDescVar(v.desc || "");
-      setTxtPictureTypeVar(v.img_type);
-      if (v.img_type !== undefined) {
-        if (v.img_type === PictureTypeEnum.FILE) {
+  const openModalAddEditVariant = async (idx?: number) => {
+    if (idx !== undefined) {
+      const findData: DtoProductVariant = listVariant[idx];
+      setEditSelectIndexVar(idx);
+      setAddEditIdVar(findData.id || null);
+      setIsActiveVar(findData.is_active != null ? findData.is_active.toString() : undefined);
+      setTxtNameVar(findData.name || "");
+      setTxtSkuVar(findData.sku || "");
+      setTxtBarcodeVar(findData.barcode || "");
+      setTxtPriceVar(findData.price ? formatToIDR(findData.price) : "");
+      setTxtDiscPriceVar(findData.disc_price ? formatToIDR(findData.disc_price) : "");
+      setTxtDescVar(findData.desc || "");
+      setTxtPictureTypeVar(findData.img_type);
+      if (findData.img_type !== undefined) {
+        if (findData.img_type === PictureTypeEnum.FILE) {
           setUrlPictureProductVar("");
-          if(v.file_img != null && v.file_img !== undefined) setUrlPictureProductVarPrev(URL.createObjectURL(v.file_img));
-          else setUrlPictureProductVarPrev(undefined);
-        } else if (v.img_type === PictureTypeEnum.URL) {
-          setUrlPictureProductVar(v.img_url || "");
+          if(findData.file_img != null && findData.file_img !== undefined) {
+            setUrlPictureProductVarPrev(URL.createObjectURL(findData.file_img));
+            setFilePictureProductVar(findData.file_img);
+          }
+          else {
+            setUrlPictureProductVarPrev(undefined);
+            setFilePictureProductVar(undefined);
+          }
+        } else if (findData.img_type === PictureTypeEnum.URL) {
+          setUrlPictureProductVar(findData.img_url || "");
           setUrlPictureProductVarPrev(undefined);
           setFilePictureProductVar(undefined);
         }
       }
     } else {
+      setEditSelectIndexVar(null);
       setAddEditIdVar(null);
       setIsActiveVar(undefined);
       setTxtNameVar("");
@@ -518,7 +547,27 @@ export default function Page() {
     setStateFormAddEditVar({ success: true, errors: {} });
 
     const dataVar: DtoProductVariant = createDtoDataVar();
-    setListVariant(prev => [...prev, dataVar]);
+    if(editSelectIndexVar != null) {
+      setListVariant(prev => {
+      const newList = [...prev];
+      newList[editSelectIndexVar] = {
+        id: dataVar.id,
+        sku: dataVar.sku,
+        barcode: dataVar.barcode,
+        name: dataVar.name,
+        price: dataVar.price,
+        disc_price: dataVar.disc_price,
+        desc: dataVar.desc,
+        img_type: dataVar.img_type,
+        img_url: dataVar.img_url,
+        file_img: dataVar.file_img,
+        is_active: dataVar.is_active,
+      };
+      return newList;
+    });
+    }else{
+      setListVariant(prev => [...prev, dataVar]);
+    }
 
     if (submitClose === "close") closeModalAddEditVariant();
   }
@@ -870,7 +919,7 @@ export default function Page() {
                                 <CardDescription>SKU: {x.sku}</CardDescription>
                               </div>
                               <CardAction>
-                                <i onClick={() => openModalAddEditVariant(x)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
+                                <i onClick={() => openModalAddEditVariant(i)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
                                 <i onClick={() => setListVariant(removeListStateByIndex(listVariant, i))} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
                               </CardAction>
                             </div>
@@ -957,7 +1006,7 @@ export default function Page() {
               <div className="col-span-12 md:col-span-6 grid gap-2">
                 <Label className="gap-0" htmlFor="var_price">Price<span className="text-red-500">*</span></Label>
                 <div>
-                  <Input value={txtPriceVar} onChange={(e) => setTxtPriceVar(e.target.value)} type="text" id="var_price" name="var_price" placeholder="Enter variant price (IDR)" />
+                  <Input value={txtPriceVar} onChange={(e) => setTxtPriceVar(inputFormatPriceIdr(e.target.value) || "")} type="text" id="var_price" name="var_price" placeholder="Enter variant price (IDR)" />
                   {stateFormAddEditVar.errors?.var_price && <ZodErrors err={stateFormAddEditVar.errors?.var_price} />}
                 </div>
               </div>
@@ -970,7 +1019,7 @@ export default function Page() {
               <div className="col-span-12 md:col-span-6 grid gap-2">
                 <Label className="gap-0" htmlFor="var_disc_price">Discount Price</Label>
                 <div>
-                  <Input value={txtDiscPriceVar} onChange={(e) => setTxtDiscPriceVar(e.target.value)} type="text" id="var_disc_price" name="var_disc_price" placeholder="Enter variant discount (IDR)" />
+                  <Input value={txtDiscPriceVar} onChange={(e) => setTxtDiscPriceVar(inputFormatPriceIdr(e.target.value) || "")} type="text" id="var_disc_price" name="var_disc_price" placeholder="Enter variant discount (IDR)" />
                 </div>
               </div>
               <div className="col-span-12 grid gap-2">

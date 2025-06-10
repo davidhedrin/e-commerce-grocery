@@ -28,8 +28,8 @@ export type DtoProductVariant = {
   sku?: string | null;
   barcode?: string | null;
   name: string | null;
-  price?: string | null;
-  disc_price?: string | null;
+  price?: number | null;
+  disc_price?: number | null;
   desc?: string | null;
   img_type?: PictureTypeEnum;
   img_url?: string | null;

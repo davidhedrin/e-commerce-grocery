@@ -117,8 +117,8 @@ model ProductVariant {
   sku        String           @unique
   barcode    String?          @unique
   name       String
-  price      Decimal          @db.Decimal(9, 2)
-  disc_price Decimal?         @db.Decimal(9, 2)
+  price      Int
+  disc_price Int?
   stock_qty  Int
   desc       String?
   img_type   PictureTypeEnum?
