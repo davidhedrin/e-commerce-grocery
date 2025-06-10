@@ -9,30 +9,30 @@ export type DtoProductCategory = {
 }
 
 export type DtoProduct = {
-  id?: number | null;
+  id: number | null;
   name: string;
-  desc?: string | null;
-  short_desc?: string | null;
-  category_id?: number | null;
-  brand?: string | null;
-  uom?: string | null;
-  img_type?: PictureTypeEnum;
-  img_url?: string | null;
-  file_img?: File | null;
-  is_active?: boolean | null;
+  desc: string | null;
+  short_desc: string | null;
+  category_id: number | null;
+  brand: string | null;
+  uom: string | null;
+  img_type: PictureTypeEnum | null;
+  img_url: string | null;
+  file_img: File | null;
+  is_active: boolean | null;
 };
 
 export type DtoProductVariant = {
-  id?: number | null;
-  product_id?: number | null;
-  sku?: string | null;
-  barcode?: string | null;
+  id: number | null;
+  product_id: number | null;
+  sku: string | null;
+  barcode: string | null;
   name: string | null;
-  price?: number | null;
-  disc_price?: number | null;
-  desc?: string | null;
-  img_type?: PictureTypeEnum;
-  img_url?: string | null;
-  file_img?: File | null;
-  is_active?: boolean | null;
+  price: number;
+  disc_price: number | null;
+  desc: string | null;
+  img_type: PictureTypeEnum | null;
+  img_url: string | null;
+  file_img: File | null;
+  is_active: boolean | null;
 };

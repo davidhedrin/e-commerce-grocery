@@ -144,12 +144,12 @@ export default function Page() {
   const [valueSelectUom, setValueSelectUom] = useState("");
   const [txtBrand, setTxtBrand] = useState("");
   const [txtPictureType, setTxtPictureType] = useState<PictureTypeEnum | undefined>();
-  const [filePictureProduct, setFilePictureProduct] = useState<File>();
+  const [filePictureProduct, setFilePictureProduct] = useState<File | null>(null);
   const [urlPictureProduct, setUrlPictureProduct] = useState("");
   const [urlPictureProductPrev, setUrlPictureProductPrev] = useState<string>();
   const [listVariant, setListVariant] = useState<DtoProductVariant[]>([]);
   const onChangePictureType = (type: PictureTypeEnum) => {
-    setFilePictureProduct(undefined);
+    setFilePictureProduct(null);
     setUrlPictureProduct("");
     setTxtPictureType(type);
   };
@@ -182,12 +182,12 @@ export default function Page() {
       setFilePictureProduct(file);
     } else {
       setUrlPictureProductPrev(undefined);
-      setFilePictureProduct(undefined);
+      setFilePictureProduct(null);
     }
   };
   const handleRemoveImageProduct = () => {
     setUrlPictureProductPrev(undefined);
-    setFilePictureProduct(undefined);
+    setFilePictureProduct(null);
   };
   const FormSchemaAddEdit = z.object({
     is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
@@ -206,7 +206,7 @@ export default function Page() {
     const newData: DtoProduct = {
       id: addEditId,
       name: txtName,
-      desc: txtDesc,
+      desc: txtDesc || null,
       short_desc: txtShortDesc.trim() != "" ? txtShortDesc : null,
       category_id: parseInt(valueSelectCategory),
       brand: txtBrand.trim() != "" ? txtBrand : null,
@@ -232,7 +232,7 @@ export default function Page() {
         setValueSelectUom(data.uom || "");
         setTxtBrand(data.brand || "");
         setTxtPictureType(data.img_type || undefined);
-        setFilePictureProduct(undefined);
+        setFilePictureProduct(null);
         setUrlPictureProduct(data.img || "");
 
         const variants = data.variants.map(x => {
@@ -245,9 +245,9 @@ export default function Page() {
             price: x.price,
             disc_price: x.disc_price != null ? x.disc_price : null,
             desc: x.desc,
-            img_type: x.img_type || undefined,
+            img_type: x.img_type,
             img_url: x.img,
-            file_img: undefined,
+            file_img: null,
             is_active: x.is_active
           };
           return dtoData;
@@ -265,7 +265,7 @@ export default function Page() {
       setValueSelectUom("");
       setTxtBrand("");
       setTxtPictureType(PictureTypeEnum.FILE);
-      setFilePictureProduct(undefined);
+      setFilePictureProduct(null);
       setUrlPictureProduct("");
       setListVariant([]);
     }
@@ -411,13 +411,13 @@ export default function Page() {
   const [txtBarcodeVar, setTxtBarcodeVar] = useState("");
   const [txtPriceVar, setTxtPriceVar] = useState("");
   const [txtDiscPriceVar, setTxtDiscPriceVar] = useState("");
-  const [txtPictureTypeVar, setTxtPictureTypeVar] = useState<PictureTypeEnum | undefined>();
-  const [filePictureProductVar, setFilePictureProductVar] = useState<File>();
+  const [txtPictureTypeVar, setTxtPictureTypeVar] = useState<PictureTypeEnum | null>(null);
+  const [filePictureProductVar, setFilePictureProductVar] = useState<File | null>(null);
   const [urlPictureProductVar, setUrlPictureProductVar] = useState("");
   const [urlPictureProductVarPrev, setUrlPictureProductVarPrev] = useState<string>();
   const [txtDescVar, setTxtDescVar] = useState("");
   const onChangePictureTypeVar = (type: PictureTypeEnum) => {
-    setFilePictureProductVar(undefined);
+    setFilePictureProductVar(null);
     setUrlPictureProductVar("");
     setTxtPictureTypeVar(type);
   };
@@ -450,12 +450,13 @@ export default function Page() {
       setFilePictureProductVar(file);
     } else {
       setUrlPictureProductVarPrev(undefined);
-      setFilePictureProductVar(undefined);
+      setFilePictureProductVar(null);
     }
   };
   const createDtoDataVar = (): DtoProductVariant => {
     const newData: DtoProductVariant = {
       id: addEditIdVar,
+      product_id: addEditId,
       sku: txtSkuVar,
       barcode: txtBarcodeVar,
       name: txtNameVar,
@@ -493,12 +494,12 @@ export default function Page() {
           }
           else {
             setUrlPictureProductVarPrev(undefined);
-            setFilePictureProductVar(undefined);
+            setFilePictureProductVar(null);
           }
         } else if (findData.img_type === PictureTypeEnum.URL) {
           setUrlPictureProductVar(findData.img_url || "");
           setUrlPictureProductVarPrev(undefined);
-          setFilePictureProductVar(undefined);
+          setFilePictureProductVar(null);
         }
       }
     } else {
@@ -510,8 +511,8 @@ export default function Page() {
       setTxtBarcodeVar("");
       setTxtPriceVar("");
       setTxtDiscPriceVar("");
-      setTxtPictureTypeVar(undefined);
-      setFilePictureProductVar(undefined);
+      setTxtPictureTypeVar(null);
+      setFilePictureProductVar(null);
       setUrlPictureProductVar("");
       setUrlPictureProductVarPrev(undefined);
       setTxtDescVar("");
@@ -524,7 +525,7 @@ export default function Page() {
   };
   const handleRemoveImageProductVar = () => {
     setUrlPictureProductVarPrev(undefined);
-    setFilePictureProductVar(undefined);
+    setFilePictureProductVar(null);
   };
   const FormSchemaAddEditVar = z.object({
     var_is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
@@ -552,6 +553,7 @@ export default function Page() {
       const newList = [...prev];
       newList[editSelectIndexVar] = {
         id: dataVar.id,
+        product_id: addEditId,
         sku: dataVar.sku,
         barcode: dataVar.barcode,
         name: dataVar.name,
@@ -897,7 +899,7 @@ export default function Page() {
                 </div>
                 <div className="col-span-12 grid gap-2">
                   <Label className="gap-0">Description</Label>
-                  <Tiptap content={txtDesc} setContent={setTxtDesc} placeholder="Enter product description if any" className="min-h-24" />
+                  <Tiptap content={txtDesc || ""} setContent={setTxtDesc} placeholder="Enter product description if any" className="min-h-24" />
                 </div>
 
                 <div className="col-span-12 grid gap-2">
@@ -926,8 +928,8 @@ export default function Page() {
                           </CardHeader>
 
                           <CardFooter className="relative flex flex-col items-start text-sm p-0">
-                            <div className="font-medium">Price: Rp {x.price}</div>
-                            <div className="text-muted-foreground">Discount: Rp {x.disc_price || "-"}</div>
+                            <div className="font-medium">Price: Rp {formatToIDR(x.price)}</div>
+                            <div className="text-muted-foreground">Discount: Rp {x.disc_price ? formatToIDR(x.disc_price) : "-"}</div>
 
                             {x.img_url && (
                               <div className="absolute bottom-0 right-0 w-20 h-full rounded-md overflow-hidden border">
@@ -1025,7 +1027,7 @@ export default function Page() {
               <div className="col-span-12 grid gap-2">
                 <Label className="gap-0" htmlFor="var_picture_type">Picture Type</Label>
                 <div>
-                  <Select defaultValue={txtPictureTypeVar} onValueChange={(val) => onChangePictureTypeVar(val as PictureTypeEnum)} name="var_picture_type">
+                  <Select defaultValue={txtPictureTypeVar || undefined} onValueChange={(val) => onChangePictureTypeVar(val as PictureTypeEnum)} name="var_picture_type">
                     <SelectTrigger id="var_picture_type" className="w-full">
                       <SelectValue placeholder="Select variant picture type" />
                     </SelectTrigger>
