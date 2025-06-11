@@ -952,15 +952,16 @@ export default function Page() {
                             <div className="font-medium">Price: Rp {formatToIDR(x.price)}</div>
                             <div className="text-muted-foreground">Discount: Rp {x.disc_price ? formatToIDR(x.disc_price) : "-"}</div>
 
-                            {x.img_url && (
+                            {(x.img_type && x.img_url) && (
                               <div className="absolute bottom-0 right-0 w-20 h-full rounded-md overflow-hidden border">
-                                <img
-                                  src={x.img_url}
-                                  alt={x.name || "Variant"}
+                                <img 
+                                  src={`${x.img_type === PictureTypeEnum.FILE ? `upload/product/${x.img_name}` : x.img_url}`}
+                                  alt={x.name}
                                   className="object-cover w-full h-full"
                                 />
                               </div>
                             )}
+                            
                           </CardFooter>
                         </Card>
                       ))

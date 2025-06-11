@@ -142,7 +142,7 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
     const listVariant = formData.variants;
 
     await db.$transaction(async (tx) => {
-      await tx.product.upsert({
+      const productData = await tx.product.upsert({
         where: { id: data_id },
         update: {
           name: formData.name,
@@ -173,90 +173,102 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
         }
       });
       
-      // if(data_id > 0){
-      //   const getExistData = await tx.productVariant.findMany({
-      //     where: {
-      //       product_id: data_id
-      //     }
-      //   });
-      //   const incomingIds = listVariant.filter(x => x.id).map(x => x.id);
-      //   const toDelete = getExistData.filter(x => !incomingIds.includes(x.id));
-      //   const deleteDatas = toDelete.map(item =>
-      //     tx.productVariant.delete({
-      //       where: { id: item.id }
-      //     })
-      //   );
+      if(data_id > 0){
+        const getExistData = await tx.productVariant.findMany({
+          where: {
+            product_id: data_id
+          }
+        });
+        const incomingIds = listVariant.filter(x => x.id).map(x => x.id);
+        const toDelete = getExistData.filter(x => !incomingIds.includes(x.id));
+        const deleteDatas = toDelete.map(item =>
+          tx.productVariant.delete({
+            where: { id: item.id }
+          })
+        );
 
-      //   const updateOrCreate = listVariant.map(async (x) => {
-      //     const findInExist = getExistData.find(y => y.id == x.id);
-      //     if(x.img_type === PictureTypeEnum.FILE && x.file_img != null){
-      //       var upFileVar = await UploadFile(x.file_img, directoryImg, "variant");
-      //       var imgNameVar = upFileVar.status == true ? upFileVar.filename : null;
-      //       if(imgNameVar != null && imgNameVar !== undefined) x.img_url = imgNameVar;
-      //     }
+        const updateOrCreate = listVariant.map(async (x) => {
+          const findInExist = getExistData.find(y => y.id == x.id);
+          if(x.img_type === PictureTypeEnum.FILE && x.file_img != null){
+            var upFileVar = await UploadFile(x.file_img, directoryImg, "variant");
+            if(upFileVar != null && upFileVar.status == true){
+              x.img_name = upFileVar.filename;
+              x.img_url = upFileVar.path;
+            }
+          };
 
-      //     if(x.id && x.id > 0){
-      //       if(findInExist && findInExist.img_type === PictureTypeEnum.FILE && x.img_type !== PictureTypeEnum.FILE){
-      //         if(x.img_name) await DeleteFile(directoryImg, x.img_name);
-      //       };
+          if(x.id && x.id > 0){
+            if(findInExist && findInExist.img_type === PictureTypeEnum.FILE && x.img_type !== PictureTypeEnum.FILE){
+              if(x.img_name) await DeleteFile(directoryImg, x.img_name);
+            };
 
-      //       return tx.productVariant.update({
-      //         where: { id: x.id },
-      //         data: {
-      //           barcode: x.barcode,
-      //           name: x.name,
-      //           price: x.price,
-      //           disc_price: x.disc_price,
-      //           desc: x.desc,
-      //           img_type: x.img_type,
-      //           img: x.img_url,
-      //           is_active: x.is_active,
-      //           updatedBy: user?.email
-      //         }
-      //       });
-      //     } else {
-      //       return tx.productVariant.create({
-      //         data: {
-      //           product_id: productData.id,
-      //           sku: x.sku,
-      //           barcode: x.barcode,
-      //           name: x.name,
-      //           price: x.price,
-      //           disc_price: x.disc_price,
-      //           stock_qty: 0,
-      //           desc: x.desc,
-      //           img_type: x.img_type,
-      //           img: x.img_url,
-      //           is_active: x.is_active,
-      //           createdBy: user?.email
-      //         }
-      //       });
-      //     };
-      //   });
+            return tx.productVariant.update({
+              where: { id: x.id },
+              data: {
+                barcode: x.barcode,
+                name: x.name,
+                price: x.price,
+                disc_price: x.disc_price,
+                desc: x.desc,
+                img_type: x.img_type,
+                img_url: x.img_url,
+                img_name: x.img_name,
+                is_active: x.is_active,
+                updatedBy: user?.email
+              }
+            });
+          } else {
+            return tx.productVariant.create({
+              data: {
+                product_id: productData.id,
+                sku: x.sku,
+                barcode: x.barcode,
+                name: x.name,
+                price: x.price,
+                disc_price: x.disc_price,
+                stock_qty: 0,
+                desc: x.desc,
+                img_type: x.img_type,
+                img_url: x.img_url,
+                img_name: x.img_name,
+                is_active: x.is_active,
+                createdBy: user?.email
+              }
+            });
+          };
+        });
         
-      //   await Promise.all([...updateOrCreate, ...deleteDatas]);
-      // }else{
-      //   const setListVariant: Prisma.ProductVariantCreateManyInput[] = listVariant.map((x) => {
-      //     return {
-      //       product_id: productData.id,
-      //       sku: x.sku,
-      //       barcode: x.barcode,
-      //       name: x.name,
-      //       price: x.price,
-      //       disc_price: x.disc_price,
-      //       stock_qty: 0,
-      //       desc: x.desc,
-      //       img_type: x.img_type,
-      //       img: x.img_url,
-      //       is_active: x.is_active,
-      //       createdBy: user?.email
-      //     }
-      //   });
+        await Promise.all([...updateOrCreate, ...deleteDatas]);
+      }else{
+        const setListVariant = await Promise.all(listVariant.map(async (x) => {
+          if(x.img_type === PictureTypeEnum.FILE && x.file_img != null){
+            var upFileVar = await UploadFile(x.file_img, directoryImg, "variant");
+            if(upFileVar != null && upFileVar.status == true){
+              x.img_name = upFileVar.filename;
+              x.img_url = upFileVar.path;
+            }
+          };
+          return {
+            product_id: productData.id,
+            sku: x.sku,
+            barcode: x.barcode,
+            name: x.name,
+            price: x.price,
+            disc_price: x.disc_price,
+            stock_qty: 0,
+            desc: x.desc,
+            img_type: x.img_type,
+            img_url: x.img_url,
+            img_name: x.img_name,
+            is_active: x.is_active,
+            createdBy: user?.email
+          }
+        }));
 
-      //   await tx.productVariant.createMany({
-      //     data: setListVariant
-      //   });
-      // }
+        await tx.productVariant.createMany({
+          data: setListVariant
+        });
+      }
     })
   } catch (error: any) {
     throw new Error(error.message);
