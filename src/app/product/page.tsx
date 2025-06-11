@@ -239,6 +239,7 @@ export default function Page() {
         setTxtPictureType(data.img_type || undefined);
         setFilePictureProduct(null);
         setUrlPictureProduct(data.img_url || "");
+        setUrlPictureProductPrev(data.img_url || "");
         setCategoryEdit(data.category as ProductCategory);
         setDatasCategory(prev => [...prev, data.category as ProductCategory]);
 
@@ -275,6 +276,7 @@ export default function Page() {
       setTxtPictureType(PictureTypeEnum.FILE);
       setFilePictureProduct(null);
       setUrlPictureProduct("");
+      setUrlPictureProductPrev(undefined);
       setListVariant([]);
       setCategoryEdit(undefined);
     }
@@ -405,7 +407,7 @@ export default function Page() {
         slug: true
       }
     });
-    
+
     const datas = getData.data;
     setDatasCategory(datas);
     if (categoryEdit !== undefined) {
@@ -634,7 +636,7 @@ export default function Page() {
                 <TableRow key={data.id}>
                   <TableCell>{(pageTable - 1) * perPage + i + 1}</TableCell>
                   <TableCell>
-                    <img src={`${data.img_type === PictureTypeEnum.FILE ? `upload/product/${data.img_name}` : data.img_url}`} alt={data.name} style={{ width: "80px", height: "40px", objectFit: "cover" }} />
+                    <img src={data.img_url || ""} alt={data.name} style={{ width: "80px", height: "40px", objectFit: "cover" }} />
                   </TableCell>
                   {
                     'slug' in data && <TableCell>
@@ -844,7 +846,7 @@ export default function Page() {
                     <div className="col-span-12 mb-1">
                       <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${txtPictureType === PictureTypeEnum.FILE ? "" : "hidden"}`}>
                         <div className="flex justify-center items-center">
-                          {!filePictureProduct ? (
+                          {/* {!filePictureProduct ? (
                             <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
                               <i className="bx bx-image-add text-2xl"></i>
                               <div>
@@ -878,7 +880,33 @@ export default function Page() {
                               <p className="font-normal italic">Click here to select file</p>
                               {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
                             </Label>
-                          )}
+                          )} */}
+                          {
+                            urlPictureProductPrev ? (
+                              <div className="relative w-full h-28">
+                                <img
+                                  src={urlPictureProductPrev}
+                                  alt="Selected"
+                                  className="w-full h-28 object-cover rounded-lg border-2 border-dashed border-gray-600"
+                                />
+                                <Button
+                                  type="button"
+                                  variant={"destructive"}
+                                  className="cursor-pointer absolute top-2 right-2 rounded-full px-1 h-6"
+                                  onClick={handleRemoveImageProduct}
+                                >
+                                  <i className="bx bx-x"></i>
+                                </Button>
+                              </div>
+                            ) : <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
+                              <i className="bx bx-image-add text-2xl"></i>
+                              <div>
+                                Choose Image<span className="text-red-500">*</span>
+                              </div>
+                              <p className="font-normal italic">Click here to select file</p>
+                              {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
+                            </Label>
+                          }
                           <div>
                             <Input onChange={handleFileChange} type="file" id="picture_file" name="picture_file" className="hidden" />
                           </div>
@@ -952,16 +980,15 @@ export default function Page() {
                             <div className="font-medium">Price: Rp {formatToIDR(x.price)}</div>
                             <div className="text-muted-foreground">Discount: Rp {x.disc_price ? formatToIDR(x.disc_price) : "-"}</div>
 
-                            {(x.img_type && x.img_url) && (
+                            {x.img_url && (
                               <div className="absolute bottom-0 right-0 w-20 h-full rounded-md overflow-hidden border">
-                                <img 
-                                  src={`${x.img_type === PictureTypeEnum.FILE ? `upload/product/${x.img_name}` : x.img_url}`}
+                                <img
+                                  src={x.img_url || ""}
                                   alt={x.name}
                                   className="object-cover w-full h-full"
                                 />
                               </div>
                             )}
-                            
                           </CardFooter>
                         </Card>
                       ))

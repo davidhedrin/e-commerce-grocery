@@ -132,14 +132,23 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
     const { user } = session;
 
     const directoryImg = "public/upload/product";
-    var upFile = formData.file_img != null ? await UploadFile(formData.file_img, directoryImg) : null;
-    if(formData.img_type === PictureTypeEnum.FILE && upFile != null && upFile.status == true){
-      formData.img_name = upFile.filename;
-      formData.img_url = upFile.path;
-    }
-
     const data_id = formData.id ?? 0;
     const listVariant = formData.variants;
+
+    const findProdForImg = await db.product.findUnique({
+      where: { id: data_id }
+    });
+    if(findProdForImg && findProdForImg.img_type === PictureTypeEnum.FILE && formData.img_type !== PictureTypeEnum.FILE){
+      if(findProdForImg.img_name) await DeleteFile(directoryImg, findProdForImg.img_name);
+    };
+    if(formData.img_type === PictureTypeEnum.FILE && formData.file_img != null){
+      var upFile = await UploadFile(formData.file_img, directoryImg);
+      if(upFile != null && upFile.status == true){
+        formData.img_name = upFile.filename;
+        formData.img_url = `upload/product/${upFile.filename}`;
+        if(findProdForImg && findProdForImg.img_name) await DeleteFile(directoryImg, findProdForImg.img_name);
+      }
+    };
 
     await db.$transaction(async (tx) => {
       const productData = await tx.product.upsert({
@@ -193,7 +202,8 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
             var upFileVar = await UploadFile(x.file_img, directoryImg, "variant");
             if(upFileVar != null && upFileVar.status == true){
               x.img_name = upFileVar.filename;
-              x.img_url = upFileVar.path;
+              x.img_url = `upload/product/${upFileVar.filename}`;
+              if(findInExist && findInExist.img_name) await DeleteFile(directoryImg, findInExist.img_name);
             }
           };
 
@@ -245,7 +255,7 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
             var upFileVar = await UploadFile(x.file_img, directoryImg, "variant");
             if(upFileVar != null && upFileVar.status == true){
               x.img_name = upFileVar.filename;
-              x.img_url = upFileVar.path;
+              x.img_url = `upload/product/${upFileVar.filename}`;
             }
           };
           return {
