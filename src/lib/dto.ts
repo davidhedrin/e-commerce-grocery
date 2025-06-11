@@ -18,6 +18,7 @@ export type DtoProduct = {
   uom: string | null;
   img_type: PictureTypeEnum | null;
   img_url: string | null;
+  img_name: string | null;
   file_img: File | null;
   is_active: boolean | null;
 
@@ -35,6 +36,7 @@ export type DtoProductVariant = {
   desc: string | null;
   img_type: PictureTypeEnum | null;
   img_url: string | null;
+  img_name: string | null;
   file_img: File | null;
   is_active: boolean | null;
 };

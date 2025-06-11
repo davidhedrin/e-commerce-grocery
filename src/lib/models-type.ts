@@ -41,9 +41,9 @@ export type PaginateResult<T> = {
 
 export type UploadFileRespons = {
   status: boolean;
-  message?: string | null;
-  filename?: string | null;
-  path?: string | null;
+  message: string | null;
+  filename: string | null;
+  path: string | null;
 };
 
 export type GroupAppsMenu = {

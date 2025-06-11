@@ -79,7 +79,9 @@ export default function Page() {
         },
         select: {
           id: true,
-          img: true,
+          img_type: true,
+          img_url: true,
+          img_name: true,
           ...selectObj
         },
         orderBy: orderObj
@@ -148,6 +150,7 @@ export default function Page() {
   const [urlPictureProduct, setUrlPictureProduct] = useState("");
   const [urlPictureProductPrev, setUrlPictureProductPrev] = useState<string>();
   const [listVariant, setListVariant] = useState<DtoProductVariant[]>([]);
+  const [categoryEdit, setCategoryEdit] = useState<ProductCategory>();
   const onChangePictureType = (type: PictureTypeEnum) => {
     setFilePictureProduct(null);
     setUrlPictureProduct("");
@@ -192,7 +195,6 @@ export default function Page() {
   const FormSchemaAddEdit = z.object({
     is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
     name: z.string().min(1, { message: 'Name is required field.' }).trim(),
-    slug: z.string().min(1, { message: 'Slug is required field.' }).trim(),
     category: z.string().min(1, { message: 'Category is required field.' }).trim(),
     picture_type: z.string().min(1, { message: 'Picture type is required field.' }).trim(),
     list_variant: z.array(z.string()).min(1, { message: 'At least one product variant is required.' })
@@ -216,7 +218,8 @@ export default function Page() {
       file_img: filePictureProduct,
       is_active: isActive === "true" ? true : false,
 
-      variants: listVariant
+      variants: listVariant,
+      img_name: null,
     };
     return newData;
   };
@@ -235,7 +238,9 @@ export default function Page() {
         setTxtBrand(data.brand || "");
         setTxtPictureType(data.img_type || undefined);
         setFilePictureProduct(null);
-        setUrlPictureProduct(data.img || "");
+        setUrlPictureProduct(data.img_url || "");
+        setCategoryEdit(data.category as ProductCategory);
+        setDatasCategory(prev => [...prev, data.category as ProductCategory]);
 
         const variants = data.variants.map(x => {
           const dtoData: DtoProductVariant = {
@@ -248,7 +253,8 @@ export default function Page() {
             disc_price: x.disc_price != null ? x.disc_price : null,
             desc: x.desc,
             img_type: x.img_type,
-            img_url: x.img,
+            img_url: x.img_url,
+            img_name: x.img_name,
             file_img: null,
             is_active: x.is_active
           };
@@ -270,6 +276,7 @@ export default function Page() {
       setFilePictureProduct(null);
       setUrlPictureProduct("");
       setListVariant([]);
+      setCategoryEdit(undefined);
     }
     setOpenModal(true);
   };
@@ -364,7 +371,7 @@ export default function Page() {
   const [openSelectUom, setOpenSelectUom] = useState(false);
 
   const [inputSearchCategory, setInputSearchCategory] = useState("");
-  const [datasCategory, setDatasCategory] = useState<ProductCategory[] | null>(null);
+  const [datasCategory, setDatasCategory] = useState<ProductCategory[]>([]);
   const [openSelectCategory, setOpenSelectCategory] = useState(false);
   const openPopoverCategory = async (open: boolean) => {
     setInputSearchCategory("");
@@ -398,7 +405,17 @@ export default function Page() {
         slug: true
       }
     });
-    setDatasCategory(getData.data);
+    
+    const datas = getData.data;
+    setDatasCategory(datas);
+    if (categoryEdit !== undefined) {
+      const exists = datas.some(item => item.id === categoryEdit.id);
+      if (!exists) {
+        setDatasCategory([categoryEdit, ...datas]);
+      } else {
+        setDatasCategory(datas);
+      }
+    }
   };
   // End Popover Seach
 
@@ -469,9 +486,10 @@ export default function Page() {
       img_url: urlPictureProductVar.trim() != "" ? urlPictureProductVar : null,
       file_img: filePictureProductVar,
       is_active: isActiveVar === "true" ? true : false,
+      img_name: null,
     };
 
-    if(txtPictureTypeVar === PictureTypeEnum.FILE && filePictureProductVar != undefined) newData.img_url = URL.createObjectURL(filePictureProductVar);
+    if (txtPictureTypeVar === PictureTypeEnum.FILE && filePictureProductVar != undefined) newData.img_url = URL.createObjectURL(filePictureProductVar);
     return newData;
   };
   const openModalAddEditVariant = async (idx?: number) => {
@@ -490,7 +508,7 @@ export default function Page() {
       if (findData.img_type !== undefined) {
         if (findData.img_type === PictureTypeEnum.FILE) {
           setUrlPictureProductVar("");
-          if(findData.file_img != null && findData.file_img !== undefined) {
+          if (findData.file_img != null && findData.file_img !== undefined) {
             setUrlPictureProductVarPrev(URL.createObjectURL(findData.file_img));
             setFilePictureProductVar(findData.file_img);
           }
@@ -550,26 +568,27 @@ export default function Page() {
     setStateFormAddEditVar({ success: true, errors: {} });
 
     const dataVar: DtoProductVariant = createDtoDataVar();
-    if(editSelectIndexVar != null) {
+    if (editSelectIndexVar != null) {
       setListVariant(prev => {
-      const newList = [...prev];
-      newList[editSelectIndexVar] = {
-        id: dataVar.id,
-        product_id: addEditId,
-        sku: dataVar.sku,
-        barcode: dataVar.barcode,
-        name: dataVar.name,
-        price: dataVar.price,
-        disc_price: dataVar.disc_price,
-        desc: dataVar.desc,
-        img_type: dataVar.img_type,
-        img_url: dataVar.img_url,
-        file_img: dataVar.file_img,
-        is_active: dataVar.is_active,
-      };
-      return newList;
-    });
-    }else{
+        const newList = [...prev];
+        newList[editSelectIndexVar] = {
+          id: dataVar.id,
+          product_id: addEditId,
+          sku: dataVar.sku,
+          barcode: dataVar.barcode,
+          name: dataVar.name,
+          price: dataVar.price,
+          disc_price: dataVar.disc_price,
+          desc: dataVar.desc,
+          img_type: dataVar.img_type,
+          img_url: dataVar.img_url,
+          file_img: dataVar.file_img,
+          is_active: dataVar.is_active,
+          img_name: dataVar.img_name,
+        };
+        return newList;
+      });
+    } else {
       setListVariant(prev => [...prev, dataVar]);
     }
 
@@ -615,7 +634,7 @@ export default function Page() {
                 <TableRow key={data.id}>
                   <TableCell>{(pageTable - 1) * perPage + i + 1}</TableCell>
                   <TableCell>
-                    <img src={data.img || ""} alt={data.name} style={{ width: "80px", height: "40px", objectFit: "cover" }} />
+                    <img src={`${data.img_type === PictureTypeEnum.FILE ? `upload/product/${data.img_name}` : data.img_url}`} alt={data.name} style={{ width: "80px", height: "40px", objectFit: "cover" }} />
                   </TableCell>
                   {
                     'slug' in data && <TableCell>

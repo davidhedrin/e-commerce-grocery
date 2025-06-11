@@ -98,7 +98,8 @@ model Product {
   brand       String?
   uom         String?
   img_type    PictureTypeEnum?
-  img         String?
+  img_url    String?
+  img_name    String?
   is_active   Boolean?         @default(true)
   category    ProductCategory? @relation(fields: [category_id], references: [id], onDelete: SetNull)
   variants    ProductVariant[]
@@ -122,7 +123,8 @@ model ProductVariant {
   stock_qty  Int
   desc       String?
   img_type   PictureTypeEnum?
-  img        String?
+  img_url   String?
+  img_name   String?
   is_active  Boolean?         @default(true)
   product    Product          @relation(fields: [product_id], references: [id], onDelete: Cascade)
 

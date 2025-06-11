@@ -6,7 +6,7 @@ import { PaginateResult, CommonParams, UploadFileRespons } from "@/lib/models-ty
 
 import { writeFile } from 'fs/promises';
 import path from 'path';
-import { mkdirSync, existsSync } from 'fs';
+import { mkdirSync, existsSync, unlinkSync } from 'fs';
 import { stringWithTimestamp } from "@/lib/utils";
 
 export async function UploadFile(file: File, loc: string, prefix?: string): Promise<UploadFileRespons> {
@@ -39,6 +39,36 @@ export async function UploadFile(file: File, loc: string, prefix?: string): Prom
     return {
       status: false,
       message: err.message,
+      filename: null,
+      path: null
     };
   }
-}
+};
+export async function DeleteFile(loc: string, filename: string): Promise<UploadFileRespons> {
+  try {
+    const filePath = path.join(process.cwd(), loc, filename);
+    if (!existsSync(filePath)) {
+      return {
+        status: false,
+        message: "File was not found.",
+        filename: filename,
+        path: null
+      };
+    }
+
+    unlinkSync(filePath);
+    return {
+      status: true,
+      message: "File deleted successfully.",
+      filename: filename,
+      path: null
+    };
+  } catch (err: any) {
+    return {
+      status: false,
+      message: err.message,
+      filename: filename,
+      path: null
+    };
+  }
+};
