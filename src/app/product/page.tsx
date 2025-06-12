@@ -147,8 +147,8 @@ export default function Page() {
   const [txtBrand, setTxtBrand] = useState("");
   const [txtPictureType, setTxtPictureType] = useState<PictureTypeEnum | undefined>();
   const [filePictureProduct, setFilePictureProduct] = useState<File | null>(null);
-  const [urlPictureProduct, setUrlPictureProduct] = useState("");
   const [urlPictureProductPrev, setUrlPictureProductPrev] = useState<string>();
+  const [urlPictureProduct, setUrlPictureProduct] = useState("");
   const [listVariant, setListVariant] = useState<DtoProductVariant[]>([]);
   const [categoryEdit, setCategoryEdit] = useState<ProductCategory>();
   const onChangePictureType = (type: PictureTypeEnum) => {
@@ -191,6 +191,7 @@ export default function Page() {
   const handleRemoveImageProduct = () => {
     setUrlPictureProductPrev(undefined);
     setFilePictureProduct(null);
+    setUrlPictureProduct("");
   };
   const FormSchemaAddEdit = z.object({
     is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
@@ -284,7 +285,7 @@ export default function Page() {
   };
   const handleFormSubmitAddEdit = async (formData: FormData) => {
     formData.append("category", valueSelectCategory);
-    formData.append("picture_file", filePictureProduct?.name || "");
+    formData.append("picture_file", urlPictureProductPrev || "");
     formData.append("picture_url", urlPictureProduct);
     formData.append("list_variant", JSON.stringify(listVariant.map(x => x.name)));
 
@@ -434,8 +435,8 @@ export default function Page() {
   const [txtDiscPriceVar, setTxtDiscPriceVar] = useState("");
   const [txtPictureTypeVar, setTxtPictureTypeVar] = useState<PictureTypeEnum | null>(null);
   const [filePictureProductVar, setFilePictureProductVar] = useState<File | null>(null);
-  const [urlPictureProductVar, setUrlPictureProductVar] = useState("");
   const [urlPictureProductVarPrev, setUrlPictureProductVarPrev] = useState<string>();
+  const [urlPictureProductVar, setUrlPictureProductVar] = useState("");
   const [txtDescVar, setTxtDescVar] = useState("");
   const onChangePictureTypeVar = (type: PictureTypeEnum) => {
     setFilePictureProductVar(null);
@@ -509,13 +510,13 @@ export default function Page() {
       setTxtPictureTypeVar(findData.img_type);
       if (findData.img_type !== undefined) {
         if (findData.img_type === PictureTypeEnum.FILE) {
-          setUrlPictureProductVar("");
+          setUrlPictureProductVar(findData.img_url || "");
+          setUrlPictureProductVarPrev(findData.img_url || "");
           if (findData.file_img != null && findData.file_img !== undefined) {
             setUrlPictureProductVarPrev(URL.createObjectURL(findData.file_img));
             setFilePictureProductVar(findData.file_img);
           }
           else {
-            setUrlPictureProductVarPrev(undefined);
             setFilePictureProductVar(null);
           }
         } else if (findData.img_type === PictureTypeEnum.URL) {
@@ -548,6 +549,7 @@ export default function Page() {
   const handleRemoveImageProductVar = () => {
     setUrlPictureProductVarPrev(undefined);
     setFilePictureProductVar(null);
+    setUrlPictureProductVar("");
   };
   const FormSchemaAddEditVar = z.object({
     var_is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
@@ -846,42 +848,43 @@ export default function Page() {
                     <div className="col-span-12 mb-1">
                       <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${txtPictureType === PictureTypeEnum.FILE ? "" : "hidden"}`}>
                         <div className="flex justify-center items-center">
-                          {/* {!filePictureProduct ? (
-                            <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
-                              <i className="bx bx-image-add text-2xl"></i>
-                              <div>
-                                Choose Image<span className="text-red-500">*</span>
-                              </div>
-                              <p className="font-normal italic">Click here to select file</p>
-                              {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
-                            </Label>
-                          ) : (
-                            urlPictureProductPrev ? (
-                              <div className="relative w-full h-28">
-                                <img
-                                  src={urlPictureProductPrev}
-                                  alt="Selected"
-                                  className="w-full h-28 object-cover rounded-lg border-2 border-dashed border-gray-600"
-                                />
-                                <Button
-                                  type="button"
-                                  variant={"destructive"}
-                                  className="cursor-pointer absolute top-2 right-2 rounded-full px-1 h-6"
-                                  onClick={handleRemoveImageProduct}
-                                >
-                                  <i className="bx bx-x"></i>
-                                </Button>
-                              </div>
-                            ) : <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
-                              <i className="bx bx-image-add text-2xl"></i>
-                              <div>
-                                Choose Image<span className="text-red-500">*</span>
-                              </div>
-                              <p className="font-normal italic">Click here to select file</p>
-                              {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
-                            </Label>
-                          )} */}
                           {
+                            // {!filePictureProduct ? (
+                            //   <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
+                            //     <i className="bx bx-image-add text-2xl"></i>
+                            //     <div>
+                            //       Choose Image<span className="text-red-500">*</span>
+                            //     </div>
+                            //     <p className="font-normal italic">Click here to select file</p>
+                            //     {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
+                            //   </Label>
+                            // ) : (
+                            //   urlPictureProductPrev ? (
+                            //     <div className="relative w-full h-28">
+                            //       <img
+                            //         src={urlPictureProductPrev}
+                            //         alt="Selected"
+                            //         className="w-full h-28 object-cover rounded-lg border-2 border-dashed border-gray-600"
+                            //       />
+                            //       <Button
+                            //         type="button"
+                            //         variant={"destructive"}
+                            //         className="cursor-pointer absolute top-2 right-2 rounded-full px-1 h-6"
+                            //         onClick={handleRemoveImageProduct}
+                            //       >
+                            //         <i className="bx bx-x"></i>
+                            //       </Button>
+                            //     </div>
+                            //   ) : <Label htmlFor="picture_file" className="gap-1 w-full h-28 cursor-pointer border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center">
+                            //     <i className="bx bx-image-add text-2xl"></i>
+                            //     <div>
+                            //       Choose Image<span className="text-red-500">*</span>
+                            //     </div>
+                            //     <p className="font-normal italic">Click here to select file</p>
+                            //     {stateFormAddEdit.errors?.picture_file && <ZodErrors err={stateFormAddEdit.errors?.picture_file} />}
+                            //   </Label>
+                            // )}
+                          
                             urlPictureProductPrev ? (
                               <div className="relative w-full h-28">
                                 <img

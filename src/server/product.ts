@@ -196,36 +196,40 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
           })
         );
 
-        const updateOrCreate = listVariant.map(async (x) => {
+        const listDirDelete: string[] = [];
+        const updateOrCreate = await Promise.all(listVariant.map(async (x) => {
           const findInExist = getExistData.find(y => y.id == x.id);
           if(x.img_type === PictureTypeEnum.FILE && x.file_img != null){
             var upFileVar = await UploadFile(x.file_img, directoryImg, "variant");
             if(upFileVar != null && upFileVar.status == true){
               x.img_name = upFileVar.filename;
               x.img_url = `upload/product/${upFileVar.filename}`;
-              if(findInExist && findInExist.img_name) await DeleteFile(directoryImg, findInExist.img_name);
+              if(findInExist && findInExist.img_name) listDirDelete.push(findInExist.img_name);
             }
           };
 
           if(x.id && x.id > 0){
-            if(findInExist && findInExist.img_type === PictureTypeEnum.FILE && x.img_type !== PictureTypeEnum.FILE){
-              if(x.img_name) await DeleteFile(directoryImg, x.img_name);
+            if(findInExist && findInExist.img_type === PictureTypeEnum.FILE){
+              if(x.img_type !== PictureTypeEnum.FILE || x.img_url === null) if(x.img_name) listDirDelete.push(x.img_name);
             };
+
+            const updateData: any = {
+              barcode: x.barcode,
+              name: x.name,
+              price: x.price,
+              disc_price: x.disc_price,
+              desc: x.desc,
+              img_type: x.img_type,
+              img_url: x.img_url,
+              img_name: x.img_name,
+              is_active: x.is_active,
+              updatedBy: user?.email,
+            };
+            if (findInExist?.sku !== x.sku) updateData.sku = x.sku;
 
             return tx.productVariant.update({
               where: { id: x.id },
-              data: {
-                barcode: x.barcode,
-                name: x.name,
-                price: x.price,
-                disc_price: x.disc_price,
-                desc: x.desc,
-                img_type: x.img_type,
-                img_url: x.img_url,
-                img_name: x.img_name,
-                is_active: x.is_active,
-                updatedBy: user?.email
-              }
+              data: updateData
             });
           } else {
             return tx.productVariant.create({
@@ -246,9 +250,10 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
               }
             });
           };
-        });
+        }));
         
         await Promise.all([...updateOrCreate, ...deleteDatas]);
+        listDirDelete.forEach(async (z) => await DeleteFile(directoryImg, z));
       }else{
         const setListVariant = await Promise.all(listVariant.map(async (x) => {
           if(x.img_type === PictureTypeEnum.FILE && x.file_img != null){
