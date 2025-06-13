@@ -295,12 +295,45 @@ export async function GetDataProductById(id: number): Promise<Product & {
   const getData = await db.product.findUnique({
     where: { id },
     include: {
-      variants: true,
+      variants: {
+        orderBy: {
+          id: "asc",
+        }
+      },
       category: true
     }
   });
 
   return getData;
+};
+export async function DeleteDataProduct(id: number) {
+  try {
+    const session = await auth();
+    if(!session) throw new Error("Authentication credential not Found!");
+    const { user } = session;
+    
+    await db.$transaction(async (tx) => {
+      await tx.productVariant.updateMany({
+        where: {
+          product_id: id
+        },
+        data: {
+          deletedAt: new Date(),
+          deletedBy: user?.email
+        }
+      });
+
+      await tx.product.update({
+        where: { id },
+        data: {
+          deletedAt: new Date(),
+          deletedBy: user?.email
+        }
+      })
+    });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
 };
 
 type GetDataProductVariantParams = {

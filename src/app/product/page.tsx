@@ -19,7 +19,7 @@ import { ZodErrors } from "@/components/zod-errors";
 import Configs from "@/lib/config";
 import { FormState, TableShortList, TableThModel } from "@/lib/models-type";
 import { formatDate, formatToIDR, inputFormatPriceIdr, normalizeSelectObj, parseFromIDR, pictureTypeLabels, removeListStateByIndex, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
-import { GetDataProduct, GetDataProductById, GetDataProductCategory, StoreUpdateDataProduct } from "@/server/product";
+import { DeleteDataProduct, GetDataProduct, GetDataProductById, GetDataProductCategory, StoreUpdateDataProduct } from "@/server/product";
 import { PictureTypeEnum, Product, ProductCategory } from "@prisma/client";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -357,7 +357,7 @@ export default function Page() {
 
     const sonnerSubmit = SonnerPromise("Deleting proccess...", "Please wait, deletion data is in progress!");
     try {
-      // await DeleteDataProductCategory(id);
+      await DeleteDataProduct(id);
       await fatchDatas();
       toast.success("Deletion Complete!", {
         description: "The selected data has been removed successfully!",
@@ -664,7 +664,7 @@ export default function Page() {
 
                   <TableCell className="text-right space-x-1">
                     <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                    <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                    <i onClick={() => deleteRow(data.id)} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
                   </TableCell>
                 </TableRow>
               )) : <TableRow>
