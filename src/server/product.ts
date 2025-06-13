@@ -210,7 +210,7 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
 
           if(x.id && x.id > 0){
             if(findInExist && findInExist.img_type === PictureTypeEnum.FILE){
-              if(x.img_type !== PictureTypeEnum.FILE || x.img_url === null) if(x.img_name) listDirDelete.push(x.img_name);
+              if(x.img_type !== PictureTypeEnum.FILE || x.img_url === null) if(findInExist.img_name) listDirDelete.push(findInExist.img_name);
             };
 
             const updateData: any = {
@@ -252,8 +252,7 @@ export async function StoreUpdateDataProduct(formData: DtoProduct) {
           };
         }));
         
-        await Promise.all([...updateOrCreate, ...deleteDatas]);
-        listDirDelete.forEach(async (z) => await DeleteFile(directoryImg, z));
+        await Promise.all([...updateOrCreate, ...deleteDatas, listDirDelete.forEach(async (z) => await DeleteFile(directoryImg, z))]);
       }else{
         const setListVariant = await Promise.all(listVariant.map(async (x) => {
           if(x.img_type === PictureTypeEnum.FILE && x.file_img != null){
