@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar"
 import { ModeToggle } from '@/components/mode-toggle';
 import { Navbar } from "@/components/navbar";
+import { Footer } from '@/components/footer';
 
 export default function LayoutWraper({ children }: Readonly<{ children: React.ReactNode; }>) {
   const pathname = usePathname();
@@ -47,6 +48,9 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
             !isAuthPage && <Navbar />
           }
           {children}
+          {
+            !isAuthPage && <Footer />
+          }
         </div>
       }
     </>
