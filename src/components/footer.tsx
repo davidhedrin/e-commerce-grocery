@@ -1,3 +1,5 @@
+"use client";
+
 import Configs from "@/lib/config";
 
 interface MenuItem {
