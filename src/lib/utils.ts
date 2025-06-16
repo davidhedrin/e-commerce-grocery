@@ -146,3 +146,12 @@ export function formatToIDR(value: string | number): string {
 export function parseFromIDR(formatted: string): number {
   return parseInt(formatted.replace(/\./g, ''), 10);
 };
+
+export function getInitials(name?: string | null): string {
+  if (!name) return "";
+
+  const words = name.trim().split(" ").filter(Boolean);
+  const initials = words.slice(0, 2).map(word => word[0]?.toUpperCase() || "");
+
+  return initials.join("");
+}

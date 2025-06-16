@@ -10,15 +10,17 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { ModeToggle } from '@/components/mode-toggle';
+import { Navbar } from "@/components/navbar";
 
 export default function LayoutWraper({ children }: Readonly<{ children: React.ReactNode; }>) {
   const pathname = usePathname();
-  const isAuthPage = pathname === '/' || pathname === '/not-found' || pathname.startsWith('/auth');
+  const setLayoutPage = pathname === '/' || pathname === '/not-found' || pathname.startsWith('/auth');
+  const isAuthPage = pathname.startsWith('/auth');
 
   return (
     <>
       {
-        !isAuthPage ? <SidebarProvider
+        !setLayoutPage ? <SidebarProvider
           style={
             {
               "--sidebar-width": "calc(var(--spacing) * 62)",
@@ -37,12 +39,15 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
               </div>
             </div>
           </SidebarInset>
-        </SidebarProvider> : <>
+        </SidebarProvider> : <div>
           <div className="fixed top-1/2 right-0 transform -translate-y-1/2 p-4">
             <ModeToggle variant={'outline'} />
           </div>
+          {
+            !isAuthPage && <Navbar />
+          }
           {children}
-        </>
+        </div>
       }
     </>
   )
