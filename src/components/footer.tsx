@@ -13,7 +13,7 @@ interface MenuItem {
 interface FooterProps {
   tagline?: string;
   menuItems?: MenuItem[];
-  copyright?: string;
+  copyright?: string | React.JSX.Element;
   bottomLinks?: {
     text: string;
     url: string;
@@ -23,7 +23,17 @@ interface FooterProps {
 const Footer = ({
   menuItems = [
     {
-      title: "Product",
+      title: "Future",
+      links: [
+        { text: "Home", url: "#" },
+        { text: "About", url: "#" },
+        { text: "Contact Us", url: "#" },
+        { text: "Privacy", url: "#" },
+        { text: "Blog", url: "#" },
+      ],
+    },
+    {
+      title: "Category",
       links: [
         { text: "Overview", url: "#" },
         { text: "Pricing", url: "#" },
@@ -34,21 +44,10 @@ const Footer = ({
       ],
     },
     {
-      title: "Company",
-      links: [
-        { text: "About", url: "#" },
-        { text: "Team", url: "#" },
-        { text: "Blog", url: "#" },
-        { text: "Careers", url: "#" },
-        { text: "Contact", url: "#" },
-        { text: "Privacy", url: "#" },
-      ],
-    },
-    {
       title: "Resources",
       links: [
-        { text: "Help", url: "#" },
-        { text: "Sales", url: "#" },
+        { text: "FAQ", url: "#" },
+        { text: "Term & Condition", url: "#" },
         { text: "Advertise", url: "#" },
       ],
     },
@@ -61,7 +60,7 @@ const Footer = ({
       ],
     },
   ],
-  copyright = "© 2024 Shadcnblocks.com. All rights reserved.",
+  copyright = <>© 2025 <a href="/" className="underline">{Configs.app_name}</a> All rights reserved.</>,
   bottomLinks = [
     { text: "Terms and Conditions", url: "#" },
     { text: "Privacy Policy", url: "#" },
@@ -70,7 +69,7 @@ const Footer = ({
   const appName = Configs.app_name;
 
   return (
-    <section className="p-6">
+    <section className="max-w-7xl mx-auto px-6">
       <div className="container">
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
@@ -85,14 +84,14 @@ const Footer = ({
                   </div>
                 </a>
               </div>
-              <p className="mt-4">
-                A collection of components for your startup business or side project.
+              <p className="mt-4 text-sm">
+                Shop anytime, anywhere, and have your groceries delivered with care, just the way you like it.
               </p>
             </div>
             {menuItems.map((section, sectionIdx) => (
               <div key={sectionIdx}>
-                <h3 className="mb-4 font-bold">{section.title}</h3>
-                <ul className="space-y-4 text-muted-foreground">
+                <h3 className="mb-4 font-bold text-sm">{section.title}</h3>
+                <ul className="space-y-4 text-muted-foreground text-sm">
                   {section.links.map((link, linkIdx) => (
                     <li
                       key={linkIdx}

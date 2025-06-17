@@ -16,7 +16,7 @@ import { Footer } from '@/components/footer';
 export default function LayoutWraper({ children }: Readonly<{ children: React.ReactNode; }>) {
   const pathname = usePathname();
   const setLayoutPage = pathname === '/' || pathname === '/not-found' || pathname.startsWith('/auth');
-  const isAuthPage = pathname.startsWith('/auth');
+  const isAuthPage = pathname.startsWith('/auth') || pathname === '/not-found';
 
   return (
     <>
@@ -40,17 +40,22 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
               </div>
             </div>
           </SidebarInset>
-        </SidebarProvider> : <div>
-          <div className="fixed top-1/2 right-0 transform -translate-y-1/2 p-4">
+        </SidebarProvider> : <div className="flex flex-col min-h-screen bg-muted">
+          <div className="fixed top-1/2 right-0 transform -translate-y-1/2 p-4 z-50">
             <ModeToggle variant={'outline'} />
           </div>
-          {
-            !isAuthPage && <Navbar />
-          }
-          {children}
-          {
-            !isAuthPage && <Footer />
-          }
+
+          {!isAuthPage && (
+            <div className="sticky top-0 z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <Navbar />
+            </div>
+          )}
+
+          <main className="flex-grow">
+            {children}
+          </main>
+
+          {!isAuthPage && <Footer />}
         </div>
       }
     </>

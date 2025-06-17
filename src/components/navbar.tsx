@@ -50,6 +50,7 @@ interface NavbarProps {
 const Navbar = ({
   menu = [
     { title: "Home", url: "#" },
+    { title: "About", url: "#" },
     {
       title: "Products",
       url: "#",
@@ -111,10 +112,7 @@ const Navbar = ({
         },
       ],
     },
-    {
-      title: "Pricing",
-      url: "#",
-    },
+    { title: "Contact Us", url: "#" },
     {
       title: "Blog",
       url: "#",
@@ -144,7 +142,7 @@ const Navbar = ({
   };
 
   return (
-    <section className="p-4">
+    <section className="py-3 px-6 bg-blue-400">
       <div className="container">
         {/* Desktop Menu */}
         <nav className="hidden justify-between lg:flex">
@@ -154,7 +152,7 @@ const Navbar = ({
               <div className="px-1 py-0.5 rounded-lg bg-blue-600 text-sidebar-primary-foreground">
                 <i className='bx bx-shopping-bag text-2xl'></i>
               </div>
-              <div className="text-lg text-blue-600">
+              <div className="text-lg text-white">
                 {appName}
               </div>
             </a>
@@ -168,7 +166,7 @@ const Navbar = ({
           </div>
           <div className="flex items-center gap-2">
             <Button className="rounded-full cursor-pointer" type="button" variant="ghost" size="sm">
-              <i className='bx bx-cart text-2xl'></i>
+              <i className='bx bx-cart text-2xl text-white'></i>
             </Button>
             {
               (session && session.status == "authenticated") ? (
@@ -208,7 +206,7 @@ const Navbar = ({
                 </>
               ) : (
                 <>
-                  <Button onClick={() => push("/auth")} type="button" variant="outline" size="sm">
+                  <Button className="text-gray-800 hover:text-gray-800 hover:bg-none dark:hover:bg-none" onClick={() => push("/auth")} type="button" variant="outline" size="sm">
                     <LogIn /> Login
                   </Button>
                   <Button onClick={() => push("/auth")} type="button" className="primary" size="sm">
@@ -227,7 +225,7 @@ const Navbar = ({
               <div className="px-1 py-0.5 rounded-lg bg-blue-600 text-sidebar-primary-foreground">
                 <i className='bx bx-shopping-bag text-2xl'></i>
               </div>
-              <div className="text-lg text-blue-600">
+              <div className="text-lg text-white">
                 {appName}
               </div>
             </a>
@@ -319,7 +317,7 @@ const renderMenuItem = (item: MenuItem) => {
   if (item.items) {
     return (
       <NavigationMenuItem key={item.title}>
-        <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+        <NavigationMenuTrigger className="text-white data-[state=open]:text-white">{item.title}</NavigationMenuTrigger>
         <NavigationMenuContent className="bg-popover text-popover-foreground">
           {item.items.map((subItem) => (
             <NavigationMenuLink asChild key={subItem.title} className="w-80">
@@ -335,7 +333,7 @@ const renderMenuItem = (item: MenuItem) => {
     <NavigationMenuItem key={item.title}>
       <NavigationMenuLink
         href={item.url}
-        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground"
+        className="text-white hover:text-white group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors"
       >
         {item.title}
       </NavigationMenuLink>
