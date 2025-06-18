@@ -335,6 +335,29 @@ export async function DeleteDataProduct(id: number) {
     throw new Error(error.message);
   }
 };
+export async function GetDataProductRandom(
+  limit:number = 10,
+  select?: Prisma.ProductSelect<DefaultArgs> | undefined
+): Promise<(Product & { category: ProductCategory | null, variants: ProductVariant[] | null})[]
+> {
+  const total = await db.product.count();
+  if (total === 0) return [];
+
+  const maxSkip = Math.max(total - limit, 0);
+  const randomSkip = Math.floor(Math.random() * (maxSkip + 1));
+
+  const data = await db.product.findMany({
+    skip: randomSkip,
+    take: limit,
+    select: {
+      ...select,
+      category: select?.category,
+      variants: select?.variants
+    }
+  });
+
+  return data;
+};
 
 type GetDataProductVariantParams = {
   where?: Prisma.ProductVariantWhereInput;

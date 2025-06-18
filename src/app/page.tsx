@@ -2,14 +2,10 @@
 
 import { useLoading } from "@/components/loading-context";
 import ProductCatalog from "@/components/product-catalog";
-import TablePagination from "@/components/table-pagination";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TableShortList, TableThModel } from "@/lib/models-type";
-import { normalizeSelectObj, sortListToOrderBy } from "@/lib/utils";
-import { GetDataProduct } from "@/server/product";
-import { Product, ProductCategory } from "@prisma/client";
+import { GetDataProductRandom } from "@/server/product";
+import { Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -17,60 +13,36 @@ import { toast } from "sonner";
 export default function Page() {
   const { setLoading } = useLoading();
 
-  const [inputPage, setInputPage] = useState("1");
-  const [pageTable, setPageTable] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [totalPage, setTotalPage] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-  const [datas, setDatas] = useState<(Product & { category: ProductCategory | null })[] | null>(null);
-  const [inputSearch, setInputSearch] = useState("");
-  const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
-  const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
-    { name: "Code", key: "slug", key_sort: "slug", IsVisible: true },
-    { name: "Name", key: "name", key_sort: "name", IsVisible: true },
-    { name: "Brand", key: "brand", key_sort: "brand", IsVisible: true },
-    { name: "Category", key: "category[slug,name]", key_sort: "category.name", IsVisible: true },
-    { name: "UOM", key: "uom", key_sort: "uom", IsVisible: true },
-    { name: "Status", key: "is_active", key_sort: "is_active", IsVisible: true },
-    { name: "Created At", key: "createdAt", key_sort: "createdAt", IsVisible: true },
-  ]);
-  const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
-    const selectObj = normalizeSelectObj(tblThColomns);
-    const orderObj = sortListToOrderBy(tblSortList);
-
+  const [datas, setDatas] = useState<(Product & { category: ProductCategory | null, variants: ProductVariant[] | null })[] | null>(null);
+  const fatchDatasRandomProduct = async () => {
     try {
-      const result = await GetDataProduct({
-        curPage: page,
-        perPage: countPage,
-        where: {
-          OR: [
-            { name: { contains: inputSearch.trim(), mode: "insensitive" } },
-            { slug: { contains: inputSearch.trim(), mode: "insensitive" } },
-            { brand: { contains: inputSearch.trim(), mode: "insensitive" } },
-            {
-              category: {
-                OR: [
-                  { name: { contains: inputSearch.trim(), mode: "insensitive" } }
-                ]
-              }
-            }
-          ]
+      const result = await GetDataProductRandom(perPage, {
+        id: true,
+        name: true,
+        brand: true,
+        uom: true,
+        img_type: true,
+        img_url: true,
+        img_name: true,
+        category: {
+          select: {
+            slug: true,
+            name: true
+          }
         },
-        select: {
-          id: true,
-          img_type: true,
-          img_url: true,
-          img_name: true,
-          ...selectObj
-        },
-        orderBy: orderObj
+        variants: {
+          take: 1,
+          orderBy: {
+            price: 'asc'
+          },
+          select: {
+            price: true,
+            disc_price: true
+          }
+        }
       });
-      setTotalPage(result.meta.totalPages);
-      setTotalCount(result.meta.total);
-      setPageTable(result.meta.page);
-      setInputPage(result.meta.page.toString());
-
-      setDatas(result.data);
+      setDatas(result);
     } catch (error: any) {
       toast.warning("Something's gone wrong!", {
         description: "We can't proccess your request, Please try again.",
@@ -78,26 +50,10 @@ export default function Page() {
     }
   };
 
-  useEffect(() => {
-    if (isFirstRender) return;
-    if (tblSortList.length === 0) fatchDatas();
-  }, [tblSortList]);
-  useEffect(() => {
-    if (isFirstRender) return;
-    fatchDatas(1);
-  }, [tblThColomns]);
-  useEffect(() => {
-    if (isFirstRender) return;
-    const timer = setTimeout(() => {
-      fatchDatas(1);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [inputSearch]);
-
   const [isFirstRender, setIsFirstRender] = useState(true);
   useEffect(() => {
     const firstInit = async () => {
-      await fatchDatas();
+      await fatchDatasRandomProduct();
       setIsFirstRender(false);
       setLoading(false);
     };
@@ -144,19 +100,6 @@ export default function Page() {
             })
           }
         </div>
-
-        <TablePagination
-          perPage={perPage}
-          pageTable={pageTable}
-          totalPage={totalPage}
-          totalCount={totalCount}
-          setPerPage={setPerPage}
-          setPageTable={setPageTable}
-          fatchData={fatchDatas}
-
-          inputPage={inputPage}
-          setInputPage={setInputPage}
-        />
       </div>
     </div>
   );

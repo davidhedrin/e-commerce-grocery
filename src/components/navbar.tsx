@@ -142,7 +142,7 @@ const Navbar = ({
   };
 
   return (
-    <section className="py-3 px-6 bg-blue-400">
+    <section className="py-3 px-16 bg-blue-400">
       <div className="container">
         {/* Desktop Menu */}
         <nav className="hidden justify-between lg:flex">
@@ -165,7 +165,7 @@ const Navbar = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button className="rounded-full cursor-pointer" type="button" variant="ghost" size="sm">
+            <Button className="rounded-full cursor-pointer hover:bg-accent/50" type="button" variant="ghost" size="sm">
               <i className='bx bx-cart text-2xl text-white'></i>
             </Button>
             {
