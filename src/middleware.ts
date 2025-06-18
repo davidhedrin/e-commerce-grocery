@@ -4,8 +4,9 @@ import { NextRequest } from "next/server";
 import { RolesEnum } from "@prisma/client";
 
 const adminMenu = [
-  "/dashboard",
-  "/product"
+  "/admin/dashboard",
+  "/admin/product",
+  "/admin/product/category",
 ];
 
 export async function middleware(request: NextRequest) {
@@ -29,7 +30,6 @@ function redirectTo(request: NextRequest, url: string) {
 export const config = {
   matcher: [
     "/auth/:path*",
-    "/dashboard",
-    "/product/:path*",
+    "/admin/:path*",
   ],
 }

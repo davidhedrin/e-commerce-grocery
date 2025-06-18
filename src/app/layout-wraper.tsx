@@ -15,13 +15,13 @@ import { Footer } from '@/components/footer';
 
 export default function LayoutWraper({ children }: Readonly<{ children: React.ReactNode; }>) {
   const pathname = usePathname();
-  const setLayoutPage = pathname === '/' || pathname === '/not-found' || pathname.startsWith('/auth');
+  const isAdminLayout = pathname.startsWith('/admin');
   const isAuthPage = pathname.startsWith('/auth') || pathname === '/not-found';
 
   return (
     <>
       {
-        !setLayoutPage ? <SidebarProvider
+        isAdminLayout ? <SidebarProvider
           style={
             {
               "--sidebar-width": "calc(var(--spacing) * 62)",

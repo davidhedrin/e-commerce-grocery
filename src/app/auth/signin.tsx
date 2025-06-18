@@ -67,7 +67,7 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
           description: `Welcome back ${email}`,
         });
         setLoading(true);
-        push("/dashboard");
+        push("/admin/dashboard");
       } catch (error: any) {
         toast.warning(error?.name || "Login failed!", {
           description: error?.message || "An unknown error occurred.",
