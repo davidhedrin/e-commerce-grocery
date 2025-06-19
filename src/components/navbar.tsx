@@ -32,7 +32,7 @@ import { signOutAuth } from "@/server/auth";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { getInitials } from "@/lib/utils";
+import { clearSessionLogin, getInitials } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 interface MenuItem {
@@ -137,7 +137,7 @@ const Navbar = ({
     toast.success("Logged Out!", {
       description: "We'll be here when you're ready to log back in.",
     });
-    localStorage.clear();
+    clearSessionLogin();
     await signOutAuth();
   };
 

@@ -33,7 +33,7 @@ export default function ProductCatalog({
         </Badge>
       </div>
 
-      <CardContent className="p-3 flex flex-col gap-1">
+      <CardContent className="p-3 flex-1 flex flex-col justify-between gap-1">
         <div>
           <div className="text-sm text-muted-foreground flex items-center gap-2">
             <span>⭐ 4.2</span><span>•</span><span>12 sold</span>

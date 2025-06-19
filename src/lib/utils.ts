@@ -154,4 +154,11 @@ export function getInitials(name?: string | null): string {
   const initials = words.slice(0, 2).map(word => word[0]?.toUpperCase() || "");
 
   return initials.join("");
+};
+
+export function clearSessionLogin() {
+  const theme = localStorage.getItem('theme');
+  localStorage.clear();
+
+  if(theme) localStorage.setItem("theme", theme);
 }

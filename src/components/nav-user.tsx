@@ -34,6 +34,7 @@ import { UseAlertDialog } from "./alert-confirm"
 import { toast } from "sonner"
 import { signOutAuth } from "@/server/auth"
 import { Session } from "next-auth"
+import { clearSessionLogin } from "@/lib/utils"
 
 export function NavUser({ user_data }: { user_data: Session | null }) {
   const [open, setOpen] = useState(false);
@@ -54,7 +55,7 @@ export function NavUser({ user_data }: { user_data: Session | null }) {
     toast.success("Logged Out!", {
       description: "We'll be here when you're ready to log back in.",
     });
-    localStorage.clear();
+    clearSessionLogin();
     await signOutAuth();
   }
 
