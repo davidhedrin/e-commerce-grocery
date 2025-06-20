@@ -4,6 +4,7 @@ import { useLoading } from "@/components/loading-context";
 import ProductCatalog from "@/components/product-catalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { GetDataProductRandom } from "@/server/product";
 import { Product, ProductCategory, ProductVariant } from "@prisma/client";
 import { Search } from "lucide-react";
@@ -14,7 +15,7 @@ export default function Page() {
   const { setLoading } = useLoading();
 
   const [perPage, setPerPage] = useState(10);
-  const [datas, setDatas] = useState<(Product & { category: ProductCategory | null, variants: ProductVariant[] | null })[] | null>(null);
+  const [datas, setDatas] = useState<(Product & { category: ProductCategory | null, variants: ProductVariant[] | null })[]>([]);
   const fatchDatasRandomProduct = async () => {
     try {
       const result = await GetDataProductRandom(perPage, {
@@ -95,11 +96,14 @@ export default function Page() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-3">
           {
-            datas?.map((x, i) => {
+            datas.map((x, i) => {
               return <ProductCatalog key={i} product={x} />
             })
           }
         </div>
+        {
+          datas.length < 1 && <Skeleton className="h-[460px] w-full rounded-xl shimmer" />
+        }
       </div>
     </div>
   );

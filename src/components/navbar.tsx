@@ -1,6 +1,6 @@
 "use client";
 
-import { Book, LogIn, LogOut, Menu, Settings, ShoppingCart, Sunset, Trees, User, Zap } from "lucide-react";
+import { Book, Gauge, LogIn, LogOut, Menu, Settings, ShoppingCart, Sunset, Trees, User, Zap } from "lucide-react";
 
 import {
   Accordion,
@@ -199,6 +199,12 @@ const Navbar = ({
                         <Settings /> Settings
                       </DropdownMenuItem>
 
+                      {
+                        session.data.user?.role == "ADMIN" && <DropdownMenuItem onClick={() => push("/admin/dashboard")} className="cursor-pointer gap-2">
+                          <Gauge /> Dashboard
+                        </DropdownMenuItem>
+                      }
+
                       <DropdownMenuSeparator />
 
                       <DropdownMenuItem onClick={() => signOutAction()} className="text-red-600 cursor-pointer gap-2">
@@ -266,15 +272,20 @@ const Navbar = ({
                   )}
                   {session && session.status === "authenticated" ? (
                     <div className="flex flex-col gap-2">
-                      <Button variant="outline" className="justify-start gap-2" size="sm">
+                      <Button type="button" variant="outline" className="justify-start gap-2" size="sm">
                         <ShoppingCart /> Shopping Cart
                       </Button>
-                      <Button variant="outline" className="justify-start gap-2" size="sm">
+                      <Button type="button" variant="outline" className="justify-start gap-2" size="sm">
                         <User /> My Profile
                       </Button>
-                      <Button variant="outline" className="justify-start gap-2" size="sm">
+                      <Button type="button" variant="outline" className="justify-start gap-2" size="sm">
                         <Settings /> Settings
                       </Button>
+                      {
+                        session.data.user?.role == "ADMIN" && <Button onClick={() => push("/admin/dashboard")} type="button" variant="outline" className="justify-start gap-2" size="sm">
+                          <Gauge /> Dashboard
+                        </Button>
+                      }
                       <Button
                         type="button"
                         onClick={() => signOutAction()}

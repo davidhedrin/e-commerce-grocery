@@ -45,7 +45,7 @@ export default function ProductDetail() {
 
 
   const [perPage, setPerPage] = useState(5);
-  const [datas, setDatas] = useState<(Product & { category: ProductCategory | null, variants: ProductVariant[] | null })[] | null>(null);
+  const [datas, setDatas] = useState<(Product & { category: ProductCategory | null, variants: ProductVariant[] | null })[]>([]);
   const fatchDatasRandomProduct = async () => {
     try {
       const result = await GetDataProductRandom(perPage, {
@@ -112,7 +112,7 @@ export default function ProductDetail() {
                     {
                       productData.variants.map((x, i) => {
                         if (x.img_url) return (
-                          <div className="border border-gray-300 rounded-md overflow-hidden hover:opacity-80">
+                          <div key={i} className="border border-gray-300 rounded-md overflow-hidden hover:opacity-80">
                             <img
                               src={x.img_url}
                               draggable={false}
@@ -142,7 +142,7 @@ export default function ProductDetail() {
                 <div className="text-2xl font-semibold break-words">
                   {productData.name}
                 </div>
-                <p className="text-sm text-gray-600 mb-3">{productData.short_desc}</p>
+                <p className="text-sm text-muted-foreground mb-3">{productData.short_desc}</p>
 
                 <div className="flex items-center gap-4 mb-3">
                   <div className="text-sm text-muted-foreground flex items-center gap-2">
@@ -223,10 +223,10 @@ export default function ProductDetail() {
 
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Stock Remaining:</p>
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2">
                     <Package className="w-5 h-5 text-green-700" />
                     <span>
-                      <strong className="text-gray-800 font-semibold">{activeVariant?.stock_qty}</strong> <span className="text-sm">items left — order now!</span>
+                      <strong className="font-semibold">{activeVariant?.stock_qty}</strong> <span className="text-muted-foreground text-sm">items left — order now!</span>
                     </span>
                   </div>
                 </div>
@@ -239,16 +239,16 @@ export default function ProductDetail() {
                   </h3>
                   <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-3">
                     <li>
-                      <strong className="text-gray-900 dark:text-white">Weight:</strong> 500gr - 2kg options
+                      <strong className="text-gray-900 dark:text-white">Brand:</strong> {productData.brand}
                     </li>
                     <li>
-                      <strong className="text-gray-900 dark:text-white">Origin:</strong> Local Farm
+                      <strong className="text-gray-900 dark:text-white">UOM:</strong> {productData.uom}
                     </li>
                     <li>
-                      <strong className="text-gray-900 dark:text-white">Freshness:</strong> Harvested this week
+                      <strong className="text-gray-900 dark:text-white">Est-Delivery:</strong> 3 Days (<span className="text-muted-foreground font-semibold">24 - 26</span> June)
                     </li>
                     <li>
-                      <strong className="text-gray-900 dark:text-white">Packaging:</strong> Eco-friendly box
+                      <strong className="text-gray-900 dark:text-white">Packaging:</strong> Buble Wrap
                     </li>
                     <li>
                       <strong className="text-gray-900 dark:text-white">Storage:</strong> Keep refrigerated
@@ -288,15 +288,13 @@ export default function ProductDetail() {
         </div> : <LoadingUI className="relative py-36" />
       }
 
-      <Separator className="my-4" />
-
-      <div className="font-bold mb-2 text-muted-foreground">
+      <div className="font-bold mb-2 mt-6 text-muted-foreground">
         Recomendation Product
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-3">
         {
-          datas?.map((x, i) => {
+          datas.map((x, i) => {
             return <ProductCatalog key={i} product={x} />
           })
         }
