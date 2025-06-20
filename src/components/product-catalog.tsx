@@ -6,7 +6,6 @@ import { Badge } from './ui/badge';
 import { Product, ProductCategory, ProductVariant } from '@prisma/client';
 import { formatToIDR } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { useLoading } from './loading-context';
 
 type ProductCatalogProp = {
   product: Product & { category: ProductCategory | null, variants: ProductVariant[] | null };
@@ -15,12 +14,10 @@ type ProductCatalogProp = {
 export default function ProductCatalog({
   product,
 }: ProductCatalogProp) {
-  const { setLoading } = useLoading();
   const { push } = useRouter();
   const firstVariant: ProductVariant | null = product.variants ? product.variants[0] : null;
 
   const goToProduct = () => {
-    setLoading(true);
     push(`/product-detail?product_id=${product.id}`);
   };
 
@@ -46,7 +43,7 @@ export default function ProductCatalog({
             {
               firstVariant && firstVariant.disc_price && (
                 <div className="text-xs line-through text-muted-foreground">
-                  Rp {firstVariant ? formatToIDR(firstVariant.disc_price) : "-"}
+                  Rp {firstVariant.disc_price ? formatToIDR(firstVariant.disc_price) : "-"}
                 </div>
               )
             }

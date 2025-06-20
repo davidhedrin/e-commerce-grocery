@@ -24,7 +24,9 @@ export default function BreadcrumbListing({ listBc }: BreadcrumbListingProps) {
           listBc.map((x, i) => {
             return <React.Fragment key={i}>
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => setLoading(true)} href={x.url ?? undefined}>
+                <BreadcrumbLink onClick={() => {
+                  if(x.url != undefined) setLoading(true)
+                }} href={x.url ?? undefined}>
                   {x.name}
                 </BreadcrumbLink>
               </BreadcrumbItem>

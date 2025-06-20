@@ -198,4 +198,61 @@
     height: 0;
     pointer-events: none;
   }
+
+  /* Custom global scrollbar */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 transparent;
+  }
+
+  /* Webkit-based browsers */
+  html::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0;
+  }
+
+  .custom-scrollbar-product-detail {
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: #cbd5e0 transparent;
+    /* thumb and track (Firefox) */
+    overflow-x: auto;
+  }
+
+  /* Chrome, Edge, Safari */
+  .custom-scrollbar-product-detail::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .custom-scrollbar-product-detail::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 9999px;
+  }
+
+  .custom-scrollbar-product-detail::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    /* Tailwind slate-300 */
+    border-radius: 9999px;
+    border: 2px solid white;
+    /* background padding look */
+  }
+
+  .custom-scrollbar-product-detail::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0;
+    /* Tailwind slate-400 */
+  }
 }

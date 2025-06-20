@@ -12,6 +12,7 @@ import {
 import { ModeToggle } from '@/components/mode-toggle';
 import { Navbar } from "@/components/navbar";
 import { Footer } from '@/components/footer';
+import { Separator } from "@/components/ui/separator";
 
 export default function LayoutWraper({ children }: Readonly<{ children: React.ReactNode; }>) {
   const pathname = usePathname();

@@ -69,7 +69,7 @@ const Footer = ({
   const appName = Configs.app_name;
 
   return (
-    <section className="max-w-7xl mx-auto px-6">
+    <section className="max-w-7xl mx-auto p-6">
       <div className="container">
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
@@ -84,7 +84,7 @@ const Footer = ({
                   </div>
                 </a>
               </div>
-              <p className="mt-4 text-sm">
+              <p className="mt-3 text-sm">
                 Shop anytime, anywhere, and have your groceries delivered with care, just the way you like it.
               </p>
             </div>

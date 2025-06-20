@@ -82,7 +82,7 @@ export default function Page() {
 
           <div className="space-x-3">
             <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-              More Advance
+              Find Advance Here
             </Button>
           </div>
         </div>

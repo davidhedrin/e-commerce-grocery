@@ -49,10 +49,10 @@ interface NavbarProps {
 
 const Navbar = ({
   menu = [
-    { title: "Home", url: "#" },
-    { title: "About", url: "#" },
+    { title: "Home", url: "/" },
+    { title: "About Us", url: "#" },
     {
-      title: "Products",
+      title: "Category",
       url: "#",
       items: [
         {
@@ -112,7 +112,7 @@ const Navbar = ({
         },
       ],
     },
-    { title: "Contact Us", url: "#" },
+    // { title: "Contact Us", url: "#" },
     {
       title: "Blog",
       url: "#",
@@ -142,7 +142,7 @@ const Navbar = ({
   };
 
   return (
-    <section className="py-3 px-16 bg-blue-400">
+    <section className="py-3 md:px-16 px-6 bg-blue-400">
       <div className="container">
         {/* Desktop Menu */}
         <nav className="hidden justify-between lg:flex">
@@ -164,8 +164,11 @@ const Navbar = ({
               </NavigationMenu>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button className="rounded-full cursor-pointer hover:bg-accent/50" type="button" variant="ghost" size="sm">
+          <div className="flex items-center gap-3">
+            <Button className="rounded-full cursor-pointer hover:bg-accent/50 px-1" type="button" variant="ghost" size="sm">
+              <i className='bx bx-heart text-xl text-white'></i>
+            </Button>
+            <Button className="rounded-full cursor-pointer hover:bg-accent/50 px-1" type="button" variant="ghost" size="sm">
               <i className='bx bx-cart text-2xl text-white'></i>
             </Button>
             {
